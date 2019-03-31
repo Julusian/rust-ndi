@@ -340,7 +340,27 @@ pub enum ReceiveCreateError {
     Failed,
 }
 
-pub fn create_receive_instance() -> Result<ReceiveInstance, ReceiveCreateError> {
+#[derive(Debug)]
+pub enum ReceiveBandwidth {
+    MetadataOnly = sdk::NDIlib_recv_bandwidth_metadata_only as isize,
+    AudioOnly = sdk::NDIlib_recv_bandwidth_audio_only as isize,
+    Lowest = sdk::NDIlib_recv_bandwidth_lowest as isize,
+    Highest = sdk::NDIlib_recv_bandwidth_highest as isize,
+}
+
+#[derive(Debug)]
+pub enum ReceiveColorFormat {
+    Fastest = sdk::NDIlib_recv_color_format_fastest as isize,
+    BgrxBgra = sdk::NDIlib_recv_color_format_BGRX_BGRA as isize, // No alpha channel: BGRX, Alpha channel: BGRA
+    UyvyBgra = sdk::NDIlib_recv_color_format_UYVY_BGRA as isize, // No alpha channel: UYVY, Alpha channel: BGRA
+    RgbxRgba = sdk::NDIlib_recv_color_format_RGBX_RGBA as isize, // No alpha channel: RGBX, Alpha channel: RGBA
+    UyvyRgba = sdk::NDIlib_recv_color_format_UYVY_RGBA as isize, // No alpha channel: UYVY, Alpha channel: RGBA
+}
+
+pub fn create_receive_instance(
+    bandwidth: ReceiveBandwidth,
+    color_format: ReceiveColorFormat,
+) -> Result<ReceiveInstance, ReceiveCreateError> {
     let props = sdk::NDIlib_recv_create_v3_t {
         source_to_connect_to: sdk::NDIlib_source_t {
             p_ndi_name: null(),
@@ -348,8 +368,8 @@ pub fn create_receive_instance() -> Result<ReceiveInstance, ReceiveCreateError> 
                 p_url_address: null(),
             },
         },
-        color_format: sdk::NDIlib_recv_color_format_fastest,
-        bandwidth: sdk::NDIlib_recv_bandwidth_highest,
+        color_format: color_format as u32,
+        bandwidth: bandwidth as i32,
         allow_video_fields: false,
         p_ndi_recv_name: null(),
     };
