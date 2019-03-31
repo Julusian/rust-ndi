@@ -1,3 +1,5 @@
+#![feature(integer_atomics)]
+
 #[allow(
     non_snake_case,
     non_camel_case_types,
@@ -8,6 +10,8 @@
 mod sdk;
 
 pub mod finder;
+pub mod receive;
+mod util;
 
 pub fn init() -> bool {
     unsafe { sdk::NDIlib_initialize() }
