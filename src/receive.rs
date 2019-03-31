@@ -174,7 +174,6 @@ pub fn receive_capture(
     capture_metadata: bool,
     timeout: u32,
 ) -> Result<ReceiveCaptureResult, ReceiveCaptureError> {
-    // TODO - this return isnt nice.
     let video_data = if capture_video {
         Some(sdk::NDIlib_video_frame_v2_t {
             xres: 0,
