@@ -9,19 +9,19 @@ use std::slice;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard, Weak};
 
-pub type VideoFrameData<'a> = GuardedPointer<'a, sdk::NDIlib_video_frame_v2_t>;
-pub struct GuardedPointer<'a, T> {
+pub struct GuardedPointer<'a, T, T2> {
     _guard: MutexGuard<'a, T>,
-    value: &'a [u8],
+    value: &'a [T2],
 }
-impl<'a, T> Deref for GuardedPointer<'a, T> {
-    type Target = [u8];
+impl<'a, T, T2> Deref for GuardedPointer<'a, T, T2> {
+    type Target = [T2];
 
-    fn deref(&self) -> &[u8] {
+    fn deref(&self) -> &[T2] {
         self.value
     }
 }
 
+pub type VideoFrameData<'a> = GuardedPointer<'a, sdk::NDIlib_video_frame_v2_t, u8>;
 pub struct VideoFrame {
     id: u64,
     instance: Arc<Mutex<sdk::NDIlib_video_frame_v2_t>>,
@@ -65,17 +65,90 @@ impl VideoFrame {
     }
 }
 
+pub type AudioFrameData<'a> = GuardedPointer<'a, sdk::NDIlib_audio_frame_v2_t, f32>;
+pub struct AudioFrame {
+    id: u64,
+    instance: Arc<Mutex<sdk::NDIlib_audio_frame_v2_t>>,
+    parent: Weak<ReceiveInstance>,
+
+    pub sample_rate: i32,
+    pub channel_count: i32,
+    pub sample_count: i32,
+    //    pub timecode: i64,
+    //    pub p_data: *mut f32,
+    //    pub channel_stride_in_bytes: ::std::os::raw::c_int,
+    //    pub p_metadata: *const ::std::os::raw::c_char,
+    //    pub timestamp: i64,
+}
+impl Drop for AudioFrame {
+    fn drop(&mut self) {
+        if let Some(parent) = self.parent.upgrade() {
+            parent.free_audio(self.id);
+        }
+    }
+}
+impl AudioFrame {
+    pub fn lock_data(&self) -> Option<AudioFrameData> {
+        if let Ok(locked) = self.instance.lock() {
+            unsafe {
+                let len = locked.channel_stride_in_bytes * locked.no_channels;
+                let data = slice::from_raw_parts(locked.p_data, len as usize);
+                Some(GuardedPointer {
+                    _guard: locked,
+                    value: data,
+                })
+            }
+        } else {
+            None
+        }
+    }
+}
+
+struct ReceiveDataStore<T> {
+    data: Mutex<HashMap<u64, Arc<Mutex<T>>>>,
+    next_id: AtomicU64,
+}
+impl<T> ReceiveDataStore<T> {
+    fn remove(&self, id: u64) -> Option<Arc<Mutex<T>>> {
+        if let Ok(mut data_store) = self.data.lock() {
+            if let Some(data) = data_store.remove(&id) {
+                Some(data)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+    fn track(&self, data: T) -> Option<(u64, Arc<Mutex<T>>)> {
+        let video2 = Arc::new(Mutex::new(data));
+
+        let id = self.next_id.fetch_add(1, Ordering::Relaxed);
+        if let Ok(mut frame_list) = self.data.lock() {
+            frame_list.insert(id, video2.clone());
+            Some((id, video2))
+        } else {
+            None
+        }
+    }
+}
+
 pub struct ReceiveInstance {
     instance: sdk::NDIlib_recv_instance_t,
-    frames: Mutex<HashMap<u64, Arc<Mutex<sdk::NDIlib_video_frame_v2_t>>>>,
-    frame_next_id: AtomicU64,
+    video_frames: ReceiveDataStore<sdk::NDIlib_video_frame_v2_t>,
+    audio_frames: ReceiveDataStore<sdk::NDIlib_audio_frame_v2_t>,
 }
 impl Drop for ReceiveInstance {
     fn drop(&mut self) {
         unsafe {
-            if let Ok(frame_store) = self.frames.lock() {
+            if let Ok(frame_store) = self.video_frames.data.lock() {
                 for f in frame_store.values() {
                     self.free_video_inner(f)
+                }
+            }
+            if let Ok(frame_store) = self.audio_frames.data.lock() {
+                for f in frame_store.values() {
+                    self.free_audio_inner(f)
                 }
             }
 
@@ -104,17 +177,7 @@ impl ReceiveInstance {
         }
     }
     fn free_video(&self, id: u64) {
-        let ndi_frame = if let Ok(mut frame_list) = self.frames.lock() {
-            if let Some(frame) = frame_list.remove(&id) {
-                Some(frame)
-            } else {
-                None
-            }
-        } else {
-            None
-        };
-
-        if let Some(frame) = ndi_frame {
+        if let Some(frame) = self.video_frames.remove(id) {
             self.free_video_inner(&frame);
         }
     }
@@ -128,18 +191,19 @@ impl ReceiveInstance {
             // TODO - ?
         }
     }
-    fn track_video(
-        &self,
-        video: sdk::NDIlib_video_frame_v2_t,
-    ) -> Option<(u64, Arc<Mutex<sdk::NDIlib_video_frame_v2_t>>)> {
-        let video2 = Arc::new(Mutex::new(video));
-
-        let id = self.frame_next_id.fetch_add(1, Ordering::Relaxed);
-        if let Ok(mut frame_list) = self.frames.lock() {
-            frame_list.insert(id, video2.clone());
-            Some((id, video2))
+    fn free_audio(&self, id: u64) {
+        if let Some(frame) = self.audio_frames.remove(id) {
+            self.free_audio_inner(&frame);
+        }
+    }
+    fn free_audio_inner(&self, audio: &Arc<Mutex<sdk::NDIlib_audio_frame_v2_t>>) {
+        if let Ok(mut ndi_ref) = audio.lock() {
+            unsafe {
+                sdk::NDIlib_recv_free_audio_v2(self.instance, &*ndi_ref);
+                ndi_ref.p_data = null_mut();
+            }
         } else {
-            None
+            // TODO - ?
         }
     }
 }
@@ -163,7 +227,7 @@ pub enum ReceiveCaptureResultType {
 pub enum ReceiveCaptureResult {
     None,
     Video(VideoFrame),
-    Audio(u32),
+    Audio(AudioFrame),
     Metadata(u32),
 }
 
@@ -230,7 +294,7 @@ pub fn receive_capture(
     match captured {
         sdk::NDIlib_frame_type_video => match video_data {
             None => Err(ReceiveCaptureError::Failed),
-            Some(video_data) => match recv.track_video(video_data) {
+            Some(video_data) => match recv.video_frames.track(video_data) {
                 None => Err(ReceiveCaptureError::Poisoned),
                 Some(v) => {
                     let frame = VideoFrame {
@@ -248,19 +312,35 @@ pub fn receive_capture(
                 }
             },
         },
-        sdk::NDIlib_frame_type_audio => Ok(ReceiveCaptureResult::Audio(1)),
+        sdk::NDIlib_frame_type_audio => match audio_data {
+            None => Err(ReceiveCaptureError::Failed),
+            Some(audio_data) => match recv.audio_frames.track(audio_data) {
+                None => Err(ReceiveCaptureError::Poisoned),
+                Some(v) => {
+                    let frame = AudioFrame {
+                        id: v.0,
+                        instance: v.1,
+                        parent: Arc::downgrade(recv),
+
+                        sample_rate: audio_data.sample_rate,
+                        channel_count: audio_data.no_channels,
+                        sample_count: audio_data.no_samples,
+                    };
+                    Ok(ReceiveCaptureResult::Audio(frame))
+                }
+            },
+        },
         sdk::NDIlib_frame_type_none => Ok(ReceiveCaptureResult::None),
         _ => Err(ReceiveCaptureError::Invalid),
     }
 }
 
 #[derive(Debug)]
-pub enum CreateReceiveError {
-    NulSource,
+pub enum ReceiveCreateError {
     Failed,
 }
 
-pub fn create_receive_instance() -> Result<ReceiveInstance, CreateReceiveError> {
+pub fn create_receive_instance() -> Result<ReceiveInstance, ReceiveCreateError> {
     let props = sdk::NDIlib_recv_create_v3_t {
         source_to_connect_to: sdk::NDIlib_source_t {
             p_ndi_name: null(),
@@ -277,12 +357,18 @@ pub fn create_receive_instance() -> Result<ReceiveInstance, CreateReceiveError> 
     let instance = unsafe { sdk::NDIlib_recv_create_v3(&props) };
 
     if instance.is_null() {
-        Err(CreateReceiveError::Failed)
+        Err(ReceiveCreateError::Failed)
     } else {
         Ok(ReceiveInstance {
             instance,
-            frames: Mutex::new(HashMap::new()),
-            frame_next_id: AtomicU64::new(0),
+            video_frames: ReceiveDataStore {
+                data: Mutex::new(HashMap::new()),
+                next_id: AtomicU64::new(0),
+            },
+            audio_frames: ReceiveDataStore {
+                data: Mutex::new(HashMap::new()),
+                next_id: AtomicU64::new(0),
+            },
         })
     }
 }

@@ -52,7 +52,10 @@ fn main() {
                         }
                     }
                     ReceiveCaptureResult::Audio(audio) => {
-                        println!("Audio data received ({} samples).", 0);
+                        println!("Audio data received ({} samples).", audio.sample_count);
+                        if let Some(data) = audio.lock_data() {
+                            println!("  Got {} bytes", data.len());
+                        }
                     }
                     _ => {}
                 },
