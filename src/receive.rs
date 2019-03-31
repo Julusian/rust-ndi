@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::ops::Deref;
 use std::ptr::{null, null_mut};
 use std::slice;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard, Weak};
 
 pub struct GuardedPointer<'a, T, T2> {
@@ -23,7 +23,7 @@ impl<'a, T, T2> Deref for GuardedPointer<'a, T, T2> {
 
 pub type VideoFrameData<'a> = GuardedPointer<'a, sdk::NDIlib_video_frame_v2_t, u8>;
 pub struct VideoFrame {
-    id: u64,
+    id: usize,
     instance: Arc<Mutex<sdk::NDIlib_video_frame_v2_t>>,
     parent: Weak<ReceiveInstance>,
 
@@ -67,7 +67,7 @@ impl VideoFrame {
 
 pub type AudioFrameData<'a> = GuardedPointer<'a, sdk::NDIlib_audio_frame_v2_t, f32>;
 pub struct AudioFrame {
-    id: u64,
+    id: usize,
     instance: Arc<Mutex<sdk::NDIlib_audio_frame_v2_t>>,
     parent: Weak<ReceiveInstance>,
 
@@ -105,11 +105,11 @@ impl AudioFrame {
 }
 
 struct ReceiveDataStore<T> {
-    data: Mutex<HashMap<u64, Arc<Mutex<T>>>>,
-    next_id: AtomicU64,
+    data: Mutex<HashMap<usize, Arc<Mutex<T>>>>,
+    next_id: AtomicUsize,
 }
 impl<T> ReceiveDataStore<T> {
-    fn remove(&self, id: u64) -> Option<Arc<Mutex<T>>> {
+    fn remove(&self, id: usize) -> Option<Arc<Mutex<T>>> {
         if let Ok(mut data_store) = self.data.lock() {
             if let Some(data) = data_store.remove(&id) {
                 Some(data)
@@ -120,7 +120,7 @@ impl<T> ReceiveDataStore<T> {
             None
         }
     }
-    fn track(&self, data: T) -> Option<(u64, Arc<Mutex<T>>)> {
+    fn track(&self, data: T) -> Option<(usize, Arc<Mutex<T>>)> {
         let video2 = Arc::new(Mutex::new(data));
 
         let id = self.next_id.fetch_add(1, Ordering::Relaxed);
@@ -176,7 +176,7 @@ impl ReceiveInstance {
             }
         }
     }
-    fn free_video(&self, id: u64) {
+    fn free_video(&self, id: usize) {
         if let Some(frame) = self.video_frames.remove(id) {
             self.free_video_inner(&frame);
         }
@@ -191,7 +191,7 @@ impl ReceiveInstance {
             // TODO - ?
         }
     }
-    fn free_audio(&self, id: u64) {
+    fn free_audio(&self, id: usize) {
         if let Some(frame) = self.audio_frames.remove(id) {
             self.free_audio_inner(&frame);
         }
@@ -383,11 +383,11 @@ pub fn create_receive_instance(
             instance,
             video_frames: ReceiveDataStore {
                 data: Mutex::new(HashMap::new()),
-                next_id: AtomicU64::new(0),
+                next_id: AtomicUsize::new(0),
             },
             audio_frames: ReceiveDataStore {
                 data: Mutex::new(HashMap::new()),
-                next_id: AtomicU64::new(0),
+                next_id: AtomicUsize::new(0),
             },
         })
     }
