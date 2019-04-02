@@ -3,14 +3,15 @@ extern crate ndi_sdk;
 use std::time::{Duration, Instant};
 
 fn main() {
-    let instance = ndi_sdk::load(None).expect("Failed to construct NDI instance");
+    let instance = ndi_sdk::load().expect("Failed to construct NDI instance");
 
     // Not required, but "correct" (see the SDK documentation.
     assert!(instance.init());
 
     {
         // We are going to create an NDI finder that locates sources on the network.
-        let finder = instance.create_find_instance(true)
+        let finder = instance
+            .create_find_instance(true)
             .expect("Expected find instance to be created");
 
         let start = Instant::now();
