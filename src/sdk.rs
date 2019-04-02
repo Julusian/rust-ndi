@@ -256,18 +256,6 @@ pub struct NDIlib_tally_t {
     pub on_program: bool,
     pub on_preview: bool,
 }
-extern "C" {
-    pub fn NDIlib_initialize() -> bool;
-}
-extern "C" {
-    pub fn NDIlib_destroy();
-}
-extern "C" {
-    pub fn NDIlib_version() -> *const ::std::os::raw::c_char;
-}
-extern "C" {
-    pub fn NDIlib_is_supported_CPU() -> bool;
-}
 pub type NDIlib_find_instance_t = *mut ::std::os::raw::c_void;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -275,32 +263,6 @@ pub struct NDIlib_find_create_t {
     pub show_local_sources: bool,
     pub p_groups: *const ::std::os::raw::c_char,
     pub p_extra_ips: *const ::std::os::raw::c_char,
-}
-extern "C" {
-    pub fn NDIlib_find_create_v2(
-        p_create_settings: *const NDIlib_find_create_t,
-    ) -> NDIlib_find_instance_t;
-}
-extern "C" {
-    pub fn NDIlib_find_create_v3(
-        p_create_settings: *const NDIlib_find_create_t,
-        p_config_data: *const ::std::os::raw::c_char,
-    ) -> NDIlib_find_instance_t;
-}
-extern "C" {
-    pub fn NDIlib_find_destroy(p_instance: NDIlib_find_instance_t);
-}
-extern "C" {
-    pub fn NDIlib_find_get_current_sources(
-        p_instance: NDIlib_find_instance_t,
-        p_no_sources: *mut u32,
-    ) -> *const NDIlib_source_t;
-}
-extern "C" {
-    pub fn NDIlib_find_wait_for_sources(
-        p_instance: NDIlib_find_instance_t,
-        timeout_in_ms: u32,
-    ) -> bool;
 }
 pub type NDIlib_recv_instance_t = *mut ::std::os::raw::c_void;
 pub const NDIlib_recv_bandwidth_metadata_only: _bindgen_ty_4 = -10;
@@ -343,219 +305,12 @@ pub struct NDIlib_recv_queue_t {
     pub audio_frames: ::std::os::raw::c_int,
     pub metadata_frames: ::std::os::raw::c_int,
 }
-extern "C" {
-    pub fn NDIlib_recv_create_v3(
-        p_create_settings: *const NDIlib_recv_create_v3_t,
-    ) -> NDIlib_recv_instance_t;
-}
-extern "C" {
-    pub fn NDIlib_recv_create_v4(
-        p_create_settings: *const NDIlib_recv_create_v3_t,
-        p_config_data: *const ::std::os::raw::c_char,
-    ) -> NDIlib_recv_instance_t;
-}
-extern "C" {
-    pub fn NDIlib_recv_destroy(p_instance: NDIlib_recv_instance_t);
-}
-extern "C" {
-    pub fn NDIlib_recv_connect(p_instance: NDIlib_recv_instance_t, p_src: *const NDIlib_source_t);
-}
-extern "C" {
-    pub fn NDIlib_recv_capture_v2(
-        p_instance: NDIlib_recv_instance_t,
-        p_video_data: *mut NDIlib_video_frame_v2_t,
-        p_audio_data: *mut NDIlib_audio_frame_v2_t,
-        p_metadata: *mut NDIlib_metadata_frame_t,
-        timeout_in_ms: u32,
-    ) -> NDIlib_frame_type_e;
-}
-extern "C" {
-    pub fn NDIlib_recv_free_video_v2(
-        p_instance: NDIlib_recv_instance_t,
-        p_video_data: *const NDIlib_video_frame_v2_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_recv_free_audio_v2(
-        p_instance: NDIlib_recv_instance_t,
-        p_audio_data: *const NDIlib_audio_frame_v2_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_recv_free_metadata(
-        p_instance: NDIlib_recv_instance_t,
-        p_metadata: *const NDIlib_metadata_frame_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_recv_free_string(
-        p_instance: NDIlib_recv_instance_t,
-        p_string: *const ::std::os::raw::c_char,
-    );
-}
-extern "C" {
-    pub fn NDIlib_recv_send_metadata(
-        p_instance: NDIlib_recv_instance_t,
-        p_metadata: *const NDIlib_metadata_frame_t,
-    ) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_set_tally(
-        p_instance: NDIlib_recv_instance_t,
-        p_tally: *const NDIlib_tally_t,
-    ) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_get_performance(
-        p_instance: NDIlib_recv_instance_t,
-        p_total: *mut NDIlib_recv_performance_t,
-        p_dropped: *mut NDIlib_recv_performance_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_recv_get_queue(
-        p_instance: NDIlib_recv_instance_t,
-        p_total: *mut NDIlib_recv_queue_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_recv_clear_connection_metadata(p_instance: NDIlib_recv_instance_t);
-}
-extern "C" {
-    pub fn NDIlib_recv_add_connection_metadata(
-        p_instance: NDIlib_recv_instance_t,
-        p_metadata: *const NDIlib_metadata_frame_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_recv_get_no_connections(
-        p_instance: NDIlib_recv_instance_t,
-    ) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    pub fn NDIlib_recv_get_web_control(
-        p_instance: NDIlib_recv_instance_t,
-    ) -> *const ::std::os::raw::c_char;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_is_supported(p_instance: NDIlib_recv_instance_t) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_recording_is_supported(p_instance: NDIlib_recv_instance_t) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_zoom(p_instance: NDIlib_recv_instance_t, zoom_value: f32) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_zoom_speed(p_instance: NDIlib_recv_instance_t, zoom_speed: f32) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_pan_tilt(
-        p_instance: NDIlib_recv_instance_t,
-        pan_value: f32,
-        tilt_value: f32,
-    ) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_pan_tilt_speed(
-        p_instance: NDIlib_recv_instance_t,
-        pan_speed: f32,
-        tilt_speed: f32,
-    ) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_store_preset(
-        p_instance: NDIlib_recv_instance_t,
-        preset_no: ::std::os::raw::c_int,
-    ) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_recall_preset(
-        p_instance: NDIlib_recv_instance_t,
-        preset_no: ::std::os::raw::c_int,
-        speed: f32,
-    ) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_auto_focus(p_instance: NDIlib_recv_instance_t) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_focus(p_instance: NDIlib_recv_instance_t, focus_value: f32) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_focus_speed(
-        p_instance: NDIlib_recv_instance_t,
-        focus_speed: f32,
-    ) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_white_balance_auto(p_instance: NDIlib_recv_instance_t) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_white_balance_indoor(p_instance: NDIlib_recv_instance_t) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_white_balance_outdoor(p_instance: NDIlib_recv_instance_t) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_white_balance_oneshot(p_instance: NDIlib_recv_instance_t) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_white_balance_manual(
-        p_instance: NDIlib_recv_instance_t,
-        red: f32,
-        blue: f32,
-    ) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_exposure_auto(p_instance: NDIlib_recv_instance_t) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_ptz_exposure_manual(
-        p_instance: NDIlib_recv_instance_t,
-        exposure_level: f32,
-    ) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_recording_start(
-        p_instance: NDIlib_recv_instance_t,
-        p_filename_hint: *const ::std::os::raw::c_char,
-    ) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_recording_stop(p_instance: NDIlib_recv_instance_t) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_recording_set_audio_level(
-        p_instance: NDIlib_recv_instance_t,
-        level_dB: f32,
-    ) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_recording_is_recording(p_instance: NDIlib_recv_instance_t) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_recv_recording_get_filename(
-        p_instance: NDIlib_recv_instance_t,
-    ) -> *const ::std::os::raw::c_char;
-}
-extern "C" {
-    pub fn NDIlib_recv_recording_get_error(
-        p_instance: NDIlib_recv_instance_t,
-    ) -> *const ::std::os::raw::c_char;
-}
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct NDIlib_recv_recording_time_t {
     pub no_frames: i64,
     pub start_time: i64,
     pub last_time: i64,
-}
-extern "C" {
-    pub fn NDIlib_recv_recording_get_times(
-        p_instance: NDIlib_recv_instance_t,
-        p_times: *mut NDIlib_recv_recording_time_t,
-    ) -> bool;
 }
 pub type NDIlib_send_instance_t = *mut ::std::os::raw::c_void;
 #[repr(C)]
@@ -566,108 +321,12 @@ pub struct NDIlib_send_create_t {
     pub clock_video: bool,
     pub clock_audio: bool,
 }
-extern "C" {
-    pub fn NDIlib_send_create(
-        p_create_settings: *const NDIlib_send_create_t,
-    ) -> NDIlib_send_instance_t;
-}
-extern "C" {
-    pub fn NDIlib_send_create_v2(
-        p_create_settings: *const NDIlib_send_create_t,
-        p_config_data: *const ::std::os::raw::c_char,
-    ) -> NDIlib_send_instance_t;
-}
-extern "C" {
-    pub fn NDIlib_send_destroy(p_instance: NDIlib_send_instance_t);
-}
-extern "C" {
-    pub fn NDIlib_send_send_video_v2(
-        p_instance: NDIlib_send_instance_t,
-        p_video_data: *const NDIlib_video_frame_v2_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_send_send_video_async_v2(
-        p_instance: NDIlib_send_instance_t,
-        p_video_data: *const NDIlib_video_frame_v2_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_send_send_audio_v2(
-        p_instance: NDIlib_send_instance_t,
-        p_audio_data: *const NDIlib_audio_frame_v2_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_send_send_metadata(
-        p_instance: NDIlib_send_instance_t,
-        p_metadata: *const NDIlib_metadata_frame_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_send_capture(
-        p_instance: NDIlib_send_instance_t,
-        p_metadata: *mut NDIlib_metadata_frame_t,
-        timeout_in_ms: u32,
-    ) -> NDIlib_frame_type_e;
-}
-extern "C" {
-    pub fn NDIlib_send_free_metadata(
-        p_instance: NDIlib_send_instance_t,
-        p_metadata: *const NDIlib_metadata_frame_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_send_get_tally(
-        p_instance: NDIlib_send_instance_t,
-        p_tally: *mut NDIlib_tally_t,
-        timeout_in_ms: u32,
-    ) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_send_get_no_connections(
-        p_instance: NDIlib_send_instance_t,
-        timeout_in_ms: u32,
-    ) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    pub fn NDIlib_send_clear_connection_metadata(p_instance: NDIlib_send_instance_t);
-}
-extern "C" {
-    pub fn NDIlib_send_add_connection_metadata(
-        p_instance: NDIlib_send_instance_t,
-        p_metadata: *const NDIlib_metadata_frame_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_send_set_failover(
-        p_instance: NDIlib_send_instance_t,
-        p_failover_source: *const NDIlib_source_t,
-    );
-}
 pub type NDIlib_routing_instance_t = *mut ::std::os::raw::c_void;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct NDIlib_routing_create_t {
     pub p_ndi_name: *const ::std::os::raw::c_char,
     pub p_groups: *const ::std::os::raw::c_char,
-}
-extern "C" {
-    pub fn NDIlib_routing_create(
-        p_create_settings: *const NDIlib_routing_create_t,
-    ) -> NDIlib_routing_instance_t;
-}
-extern "C" {
-    pub fn NDIlib_routing_destroy(p_instance: NDIlib_routing_instance_t);
-}
-extern "C" {
-    pub fn NDIlib_routing_change(
-        p_instance: NDIlib_routing_instance_t,
-        p_source: *const NDIlib_source_t,
-    ) -> bool;
-}
-extern "C" {
-    pub fn NDIlib_routing_clear(p_instance: NDIlib_routing_instance_t) -> bool;
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -698,60 +357,6 @@ pub struct NDIlib_audio_frame_interleaved_32f_t {
     pub timecode: i64,
     pub p_data: *mut f32,
 }
-extern "C" {
-    pub fn NDIlib_util_send_send_audio_interleaved_16s(
-        p_instance: NDIlib_send_instance_t,
-        p_audio_data: *const NDIlib_audio_frame_interleaved_16s_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_util_send_send_audio_interleaved_32s(
-        p_instance: NDIlib_send_instance_t,
-        p_audio_data: *const NDIlib_audio_frame_interleaved_32s_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_util_send_send_audio_interleaved_32f(
-        p_instance: NDIlib_send_instance_t,
-        p_audio_data: *const NDIlib_audio_frame_interleaved_32f_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_util_audio_to_interleaved_16s_v2(
-        p_src: *const NDIlib_audio_frame_v2_t,
-        p_dst: *mut NDIlib_audio_frame_interleaved_16s_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_util_audio_from_interleaved_16s_v2(
-        p_src: *const NDIlib_audio_frame_interleaved_16s_t,
-        p_dst: *mut NDIlib_audio_frame_v2_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_util_audio_to_interleaved_32s_v2(
-        p_src: *const NDIlib_audio_frame_v2_t,
-        p_dst: *mut NDIlib_audio_frame_interleaved_32s_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_util_audio_from_interleaved_32s_v2(
-        p_src: *const NDIlib_audio_frame_interleaved_32s_t,
-        p_dst: *mut NDIlib_audio_frame_v2_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_util_audio_to_interleaved_32f_v2(
-        p_src: *const NDIlib_audio_frame_v2_t,
-        p_dst: *mut NDIlib_audio_frame_interleaved_32f_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_util_audio_from_interleaved_32f_v2(
-        p_src: *const NDIlib_audio_frame_interleaved_32f_t,
-        p_dst: *mut NDIlib_audio_frame_v2_t,
-    );
-}
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct NDIlib_video_frame_t {
@@ -776,23 +381,6 @@ pub struct NDIlib_audio_frame_t {
     pub p_data: *mut f32,
     pub channel_stride_in_bytes: ::std::os::raw::c_int,
 }
-extern "C" {
-    pub fn NDIlib_find_create2(
-        p_create_settings: *const NDIlib_find_create_t,
-    ) -> NDIlib_find_instance_t;
-}
-extern "C" {
-    pub fn NDIlib_find_create(
-        p_create_settings: *const NDIlib_find_create_t,
-    ) -> NDIlib_find_instance_t;
-}
-extern "C" {
-    pub fn NDIlib_find_get_sources(
-        p_instance: NDIlib_find_instance_t,
-        p_no_sources: *mut u32,
-        timeout_in_ms: u32,
-    ) -> *const NDIlib_source_t;
-}
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct NDIlib_recv_create_t {
@@ -801,121 +389,7 @@ pub struct NDIlib_recv_create_t {
     pub bandwidth: NDIlib_recv_bandwidth_e,
     pub allow_video_fields: bool,
 }
-extern "C" {
-    pub fn NDIlib_recv_create_v2(
-        p_create_settings: *const NDIlib_recv_create_t,
-    ) -> NDIlib_recv_instance_t;
-}
-extern "C" {
-    pub fn NDIlib_recv_create2(
-        p_create_settings: *const NDIlib_recv_create_t,
-    ) -> NDIlib_recv_instance_t;
-}
-extern "C" {
-    pub fn NDIlib_recv_create(
-        p_create_settings: *const NDIlib_recv_create_t,
-    ) -> NDIlib_recv_instance_t;
-}
-extern "C" {
-    pub fn NDIlib_recv_capture(
-        p_instance: NDIlib_recv_instance_t,
-        p_video_data: *mut NDIlib_video_frame_t,
-        p_audio_data: *mut NDIlib_audio_frame_t,
-        p_metadata: *mut NDIlib_metadata_frame_t,
-        timeout_in_ms: u32,
-    ) -> NDIlib_frame_type_e;
-}
-extern "C" {
-    pub fn NDIlib_recv_free_video(
-        p_instance: NDIlib_recv_instance_t,
-        p_video_data: *const NDIlib_video_frame_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_recv_free_audio(
-        p_instance: NDIlib_recv_instance_t,
-        p_audio_data: *const NDIlib_audio_frame_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_send_send_video(
-        p_instance: NDIlib_send_instance_t,
-        p_video_data: *const NDIlib_video_frame_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_send_send_video_async(
-        p_instance: NDIlib_send_instance_t,
-        p_video_data: *const NDIlib_video_frame_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_send_send_audio(
-        p_instance: NDIlib_send_instance_t,
-        p_audio_data: *const NDIlib_audio_frame_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_util_audio_to_interleaved_16s(
-        p_src: *const NDIlib_audio_frame_t,
-        p_dst: *mut NDIlib_audio_frame_interleaved_16s_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_util_audio_from_interleaved_16s(
-        p_src: *const NDIlib_audio_frame_interleaved_16s_t,
-        p_dst: *mut NDIlib_audio_frame_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_util_audio_to_interleaved_32f(
-        p_src: *const NDIlib_audio_frame_t,
-        p_dst: *mut NDIlib_audio_frame_interleaved_32f_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_util_audio_from_interleaved_32f(
-        p_src: *const NDIlib_audio_frame_interleaved_32f_t,
-        p_dst: *mut NDIlib_audio_frame_t,
-    );
-}
 pub type NDIlib_framesync_instance_t = *mut ::std::os::raw::c_void;
-extern "C" {
-    pub fn NDIlib_framesync_create(
-        p_receiver: NDIlib_recv_instance_t,
-    ) -> NDIlib_framesync_instance_t;
-}
-extern "C" {
-    pub fn NDIlib_framesync_destroy(p_instance: NDIlib_framesync_instance_t);
-}
-extern "C" {
-    pub fn NDIlib_framesync_capture_audio(
-        p_instance: NDIlib_framesync_instance_t,
-        p_audio_data: *mut NDIlib_audio_frame_v2_t,
-        sample_rate: ::std::os::raw::c_int,
-        no_channels: ::std::os::raw::c_int,
-        no_samples: ::std::os::raw::c_int,
-    );
-}
-extern "C" {
-    pub fn NDIlib_framesync_free_audio(
-        p_instance: NDIlib_framesync_instance_t,
-        p_audio_data: *mut NDIlib_audio_frame_v2_t,
-    );
-}
-extern "C" {
-    pub fn NDIlib_framesync_capture_video(
-        p_instance: NDIlib_framesync_instance_t,
-        p_video_data: *mut NDIlib_video_frame_v2_t,
-        field_type: NDIlib_frame_format_type_e,
-    );
-}
-extern "C" {
-    pub fn NDIlib_framesync_free_video(
-        p_instance: NDIlib_framesync_instance_t,
-        p_video_data: *mut NDIlib_video_frame_v2_t,
-    );
-}
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct NDIlib_v3 {
@@ -1385,7 +859,4 @@ pub struct NDIlib_v3 {
 pub type NDIlib_v2 = NDIlib_v3;
 extern "C" {
     pub fn NDIlib_v3_load() -> *const NDIlib_v3;
-}
-extern "C" {
-    pub fn NDIlib_v2_load() -> *const NDIlib_v2;
 }
