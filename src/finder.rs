@@ -9,6 +9,7 @@ pub struct FindSource {
     pub url: Option<String>,
 }
 
+unsafe impl Send for FindInstance {}
 pub struct FindInstance {
     instance: sdk::NDIlib_find_instance_t,
 }
