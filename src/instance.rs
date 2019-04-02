@@ -1,4 +1,4 @@
-pub use internal::{load, NDIHandle};
+pub use self::internal::{load, NDIHandle};
 
 #[cfg(not(feature = "dynamic-link"))]
 mod internal {
@@ -17,14 +17,27 @@ mod internal {
             &self.instance
         }
     }
+    impl Drop for NDIHandle {
+        fn drop(&mut self) {
+            unsafe {
+                self.NDIlib_destroy.unwrap()();
+            }
+        }
+    }
 
     pub fn load() -> Result<NDIInstance, String> {
         let instance = unsafe { sdk::NDIlib_v3_load().as_ref() };
         match instance {
             None => Err("Failed to load lib".to_string()),
-            Some(inst) => Ok(NDIInstance {
-                handle: Arc::new(NDIHandle { instance: *inst }),
-            }),
+            Some(inst) => {
+                if unsafe { inst.NDIlib_initialize.unwrap()() } {
+                    Ok(NDIInstance {
+                        handle: Arc::new(NDIHandle { instance: *inst }),
+                    })
+                } else {
+                    Err("Init returned false".to_string())
+                }
+            }
         }
     }
 }
@@ -48,6 +61,13 @@ mod internal {
 
         fn deref(&self) -> &sdk::NDIlib_v3 {
             &self.instance
+        }
+    }
+    impl Drop for NDIHandle {
+        fn drop(&mut self) {
+            unsafe {
+                self.NDIlib_destroy.unwrap()();
+            }
         }
     }
 
@@ -82,12 +102,16 @@ mod internal {
                         if instance.is_null() {
                             Err("Library failed to initialise".to_string())
                         } else {
-                            Ok(NDIInstance {
-                                handle: Arc::new(NDIHandle {
-                                    _handle: Some(lib),
-                                    instance: *instance,
-                                }),
-                            })
+                            if inst.NDIlib_initialize.unwrap()() {
+                                Ok(NDIInstance {
+                                    handle: Arc::new(NDIHandle {
+                                        _handle: Some(lib),
+                                        instance: *instance,
+                                    }),
+                                })
+                            } else {
+                                Err("Init returned false".to_string())
+                            }
                         }
                     }
                 }
