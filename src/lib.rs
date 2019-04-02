@@ -17,6 +17,7 @@ pub mod receive;
 mod util;
 
 pub use crate::instance::load;
+use crate::receive::{ReceiveBandwidth, ReceiveColorFormat, ReceiveCreateError, ReceiveInstance};
 
 pub struct NDIInstance {
     handle: Arc<NDIHandle>,
@@ -24,5 +25,12 @@ pub struct NDIInstance {
 impl NDIInstance {
     pub fn create_find_instance(&self, show_local_sources: bool) -> Option<FindInstance> {
         finder::create_find_instance(self.handle.clone(), show_local_sources)
+    }
+    pub fn create_receive_instance(
+        &self,
+        bandwidth: ReceiveBandwidth,
+        color_format: ReceiveColorFormat,
+    ) -> Result<ReceiveInstance, ReceiveCreateError> {
+        receive::create_receive_instance(self.handle.clone(), bandwidth, color_format)
     }
 }

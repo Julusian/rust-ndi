@@ -1,6 +1,6 @@
 use crate::finder::FindSource;
-use crate::sdk;
 use crate::util::to_ndi_source;
+use crate::{sdk, NDIHandle};
 use ptrplus::AsPtr;
 use std::collections::HashMap;
 use std::ops::Deref;
@@ -134,6 +134,7 @@ impl<T> ReceiveDataStore<T> {
 }
 
 pub struct ReceiveInstance {
+    sdk_instance: Arc<NDIHandle>,
     instance: sdk::NDIlib_recv_instance_t,
     video_frames: ReceiveDataStore<sdk::NDIlib_video_frame_v2_t>,
     audio_frames: ReceiveDataStore<sdk::NDIlib_audio_frame_v2_t>,
@@ -152,7 +153,7 @@ impl Drop for ReceiveInstance {
                 }
             }
 
-            sdk::NDIlib_recv_destroy(self.instance);
+            self.sdk_instance.NDIlib_recv_destroy.unwrap()(self.instance);
         }
     }
 }
@@ -160,13 +161,13 @@ impl ReceiveInstance {
     pub fn connect(&self, source: Option<&FindSource>) -> bool {
         match source {
             None => unsafe {
-                sdk::NDIlib_recv_connect(self.instance, null());
+                self.sdk_instance.NDIlib_recv_connect.unwrap()(self.instance, null());
                 true
             },
             Some(s) => {
                 if let Ok(s2) = to_ndi_source(s) {
                     unsafe {
-                        sdk::NDIlib_recv_connect(self.instance, &s2.2);
+                        self.sdk_instance.NDIlib_recv_connect.unwrap()(self.instance, &s2.2);
                     }
 
                     true
@@ -184,7 +185,7 @@ impl ReceiveInstance {
     fn free_video_inner(&self, video: &Arc<Mutex<sdk::NDIlib_video_frame_v2_t>>) {
         if let Ok(mut ndi_ref) = video.lock() {
             unsafe {
-                sdk::NDIlib_recv_free_video_v2(self.instance, &*ndi_ref);
+                self.sdk_instance.NDIlib_recv_free_video_v2.unwrap()(self.instance, &*ndi_ref);
                 ndi_ref.p_data = null_mut();
             }
         } else {
@@ -199,7 +200,7 @@ impl ReceiveInstance {
     fn free_audio_inner(&self, audio: &Arc<Mutex<sdk::NDIlib_audio_frame_v2_t>>) {
         if let Ok(mut ndi_ref) = audio.lock() {
             unsafe {
-                sdk::NDIlib_recv_free_audio_v2(self.instance, &*ndi_ref);
+                self.sdk_instance.NDIlib_recv_free_audio_v2.unwrap()(self.instance, &*ndi_ref);
                 ndi_ref.p_data = null_mut();
             }
         } else {
@@ -283,7 +284,7 @@ pub fn receive_capture(
     };
 
     let captured = unsafe {
-        sdk::NDIlib_recv_capture_v2(
+        recv.sdk_instance.NDIlib_recv_capture_v2.unwrap()(
             recv.instance,
             video_data.as_ref().as_ptr() as *mut sdk::NDIlib_video_frame_v2_t,
             audio_data.as_ref().as_ptr() as *mut sdk::NDIlib_audio_frame_v2_t,
@@ -358,6 +359,7 @@ pub enum ReceiveColorFormat {
 }
 
 pub fn create_receive_instance(
+    sdk_instance: Arc<NDIHandle>,
     bandwidth: ReceiveBandwidth,
     color_format: ReceiveColorFormat,
 ) -> Result<ReceiveInstance, ReceiveCreateError> {
@@ -374,12 +376,13 @@ pub fn create_receive_instance(
         p_ndi_recv_name: null(),
     };
 
-    let instance = unsafe { sdk::NDIlib_recv_create_v3(&props) };
+    let instance = unsafe { sdk_instance.NDIlib_recv_create_v3.unwrap()(&props) };
 
     if instance.is_null() {
         Err(ReceiveCreateError::Failed)
     } else {
         Ok(ReceiveInstance {
+            sdk_instance,
             instance,
             video_frames: ReceiveDataStore {
                 data: Mutex::new(HashMap::new()),
