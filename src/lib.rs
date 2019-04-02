@@ -2,6 +2,8 @@ use std::sync::Arc;
 use libloading::{Library, Symbol};
 use std::path::Path;
 use std::env;
+use std::ops::Deref;
+use crate::finder::FindInstance;
 
 #[allow(
     non_snake_case,
@@ -16,24 +18,39 @@ pub mod finder;
 pub mod receive;
 mod util;
 
-pub struct NDIInstance {
+unsafe impl Send for NDIHandle {}
+pub struct NDIHandle { // TODO - keep internal
     _handle: Library,
     instance: sdk::NDIlib_v3,
+}
+impl Deref for NDIHandle {
+    type Target = sdk::NDIlib_v3;
+
+    fn deref(&self) -> &sdk::NDIlib_v3 {
+        &self.instance
+    }
+}
+
+pub struct NDIInstance {
+    handle: Arc<NDIHandle>,
 }
 impl NDIInstance {
     pub fn init(&self) -> bool {
         unsafe {
-            self.instance.NDIlib_initialize.unwrap()()
+            self.handle.NDIlib_initialize.unwrap()()
         }
     }
     pub fn destroy(&self) {
         unsafe {
-            self.instance.NDIlib_destroy.unwrap()()
+            self.handle.NDIlib_destroy.unwrap()()
         }
+    }
+    pub fn create_find_instance(&self, show_local_sources: bool) -> Option<FindInstance> {
+        finder::create_find_instance(self.handle.clone(), show_local_sources)
     }
 }
 
-pub fn load(custom_path: Option<String>) -> Result<Arc<NDIInstance>, String> {
+pub fn load(custom_path: Option<String>) -> Result<NDIInstance, String> {
     let lib_path = if let Some(path) = custom_path {
         path
     } else {
@@ -64,10 +81,12 @@ pub fn load(custom_path: Option<String>) -> Result<Arc<NDIInstance>, String> {
                         if instance.is_null() {
                             Err("Library failed to initialise".to_string())
                         } else {
-                            Ok(Arc::new(NDIInstance {
-                                _handle: lib,
-                                instance: *instance,
-                            }))
+                            Ok(NDIInstance {
+                                handle: Arc::new(NDIHandle {
+                                    _handle: lib,
+                                    instance: *instance,
+                                })
+                            })
                         }
                     }
                 }
