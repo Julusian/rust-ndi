@@ -1,8 +1,12 @@
 [package]
 name = "ndi-sdk"
 version = "0.1.0"
+license = "MIT/Apache-2.0"
 authors = ["Julian Waller <git@julusian.co.uk>"]
 edition = "2018"
+repository = "https://github.com/julusian/rust-ndi"
+
+build = "build.rs"
 
 [features]
 dynamic-link = []
