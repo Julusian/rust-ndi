@@ -1,6 +1,6 @@
 /target
 /dist
 **/*.rs.bk
-/input
+/lib
 /.idea
 /Cargo.lock
