@@ -133,6 +133,7 @@ impl<T> ReceiveDataStore<T> {
     }
 }
 
+unsafe impl Send for ReceiveInstance {}
 pub struct ReceiveInstance {
     sdk_instance: Arc<NDIHandle>,
     instance: sdk::NDIlib_recv_instance_t,

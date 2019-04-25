@@ -10,3 +10,6 @@ dynamic-link = []
 [dependencies]
 ptrplus = "1.0"
 libloading = "0.5.0"
+
+[dev-dependencies]
+png = "0.14.0"
