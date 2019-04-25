@@ -21,13 +21,26 @@ pub use crate::instance::load;
 use crate::receive::{ReceiveBandwidth, ReceiveColorFormat, ReceiveCreateError, ReceiveInstance};
 use crate::send::{SendCreateError, SendInstance};
 
+/// A loaded SDK Instance
 pub struct NDIInstance {
     handle: Arc<NDIHandle>,
 }
 impl NDIInstance {
+    /// Initialise an instance of the NDI source finder
+    ///
+    /// # Arguments
+    ///
+    /// * `show_local_sources` Whether to include sources from the local machine
+    ///
+    /// # Returns
+    ///
+    /// An instance if it was successful, or None if the SDK failed
+    ///
     pub fn create_find_instance(&self, show_local_sources: bool) -> Option<FindInstance> {
         finder::create_find_instance(self.handle.clone(), show_local_sources)
     }
+
+    /// Initialise an instance of the NDI receiver
     pub fn create_receive_instance(
         &self,
         bandwidth: ReceiveBandwidth,
@@ -36,6 +49,7 @@ impl NDIInstance {
         receive::create_receive_instance(self.handle.clone(), bandwidth, color_format)
     }
 
+    /// Initialise an instance of the NDI sender
     pub fn create_send_instance(
         &self,
         name: String,

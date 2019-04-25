@@ -25,6 +25,17 @@ mod internal {
         }
     }
 
+    /// Initialise an instance of the SDK
+    ///
+    /// # Arguments
+    ///
+    /// When the feature 'dynamic-link' is enabled, this method has a different signature of `pub fn load(custom_path: Option<String>) -> Result<NDIInstance, String>`
+    /// This allows for loading from a custom path
+    ///
+    /// # Returns
+    ///
+    /// Returns a NDIInstance when successful.
+    ///
     pub fn load() -> Result<NDIInstance, String> {
         let instance = unsafe { sdk::NDIlib_v3_load().as_ref() };
         match instance {
@@ -53,7 +64,7 @@ mod internal {
 
     unsafe impl Send for NDIHandle {}
     pub struct NDIHandle {
-        _handle: Option<Library>, // TODO - remove this when static?
+        _handle: Option<Library>,
         instance: sdk::NDIlib_v3,
     }
     impl Deref for NDIHandle {
