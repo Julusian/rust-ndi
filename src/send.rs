@@ -1,4 +1,3 @@
-use crate::receive::ReceiveColorFormat;
 use crate::{sdk, NDIHandle};
 use std::ffi::CString;
 use std::ptr::{null, null_mut};
@@ -24,8 +23,11 @@ impl Drop for SendInstance {
 impl SendInstance {
     pub fn send_video(&mut self, frame: NDISendVideoFrame) {
         unsafe {
+            // TODO - is this going to be a race condition?
+//            self.in_flight_video = Some(frame);
+//            self.sdk_instance.NDIlib_send_send_video_v2.unwrap()(self.instance, &self.in_flight_video.as_ref().unwrap().instance);
             self.sdk_instance.NDIlib_send_send_video_v2.unwrap()(self.instance, &frame.instance);
-            self.in_flight_video = None;
+            self.in_flight_video = Some(frame);
         }
     }
     pub fn send_video_async(&mut self, frame: NDISendVideoFrame) {
@@ -52,10 +54,23 @@ pub enum FrameFormatType {
     Field1 = sdk::NDIlib_frame_format_type_field_1 as isize,
 }
 
+#[derive(Debug)]
+pub enum SendColorFormat {
+    Uyvy = sdk::NDIlib_FourCC_type_UYVY as isize,
+    Yv12 = sdk::NDIlib_FourCC_type_YV12 as isize,
+    Nv12 = sdk::NDIlib_FourCC_type_NV12 as isize,
+    I420 = sdk::NDIlib_FourCC_type_I420 as isize,
+    Bgra = sdk::NDIlib_FourCC_type_BGRA as isize,
+    Bgrx = sdk::NDIlib_FourCC_type_BGRX as isize,
+    Rgba = sdk::NDIlib_FourCC_type_RGBA as isize,
+    Rgbx = sdk::NDIlib_FourCC_type_RGBX as isize,
+    Uyva = sdk::NDIlib_FourCC_type_UYVA as isize,
+}
+
 pub struct NDISendVideoFrameBuilder {
     instance: sdk::NDIlib_video_frame_v2_t,
     metadata: Option<String>,
-    data: Option<Vec<u8>>,
+    data: Vec<u8>,
 }
 impl NDISendVideoFrameBuilder {
     pub fn with_framerate(mut self, num: i32, den: i32) -> Self {
@@ -75,9 +90,9 @@ impl NDISendVideoFrameBuilder {
         mut self,
         data: Vec<u8>,
         line_stride: i32,
-        format: ReceiveColorFormat,
+        format: SendColorFormat,
     ) -> Self {
-        self.data = Some(data);
+        self.data = data;
         self.instance.line_stride_in_bytes = line_stride;
         self.instance.FourCC = format as u32;
         self
@@ -103,9 +118,9 @@ impl NDISendVideoFrameBuilder {
                 .map_err(|_| SendCreateError::InvalidName)?
                 .as_ptr();
         }
-        if let Some(data) = &mut res.data {
-            res.instance.p_data = data.as_mut_ptr();
-        }
+
+        res.data.resize((res.instance.line_stride_in_bytes * res.instance.yres) as usize, 0);
+        res.instance.p_data = res.data.as_mut_ptr();
 
         Ok(res)
     }
@@ -122,23 +137,23 @@ pub fn create_ndi_send_video_frame(
             FourCC: sdk::NDIlib_FourCC_type_BGRA,
             frame_rate_N: 0,
             frame_rate_D: 0,
-            picture_aspect_ratio: 1.0,
+            picture_aspect_ratio: 0.0,
             frame_format_type: frame_type as u32,
-            timecode: 0,
+            timecode: sdk::NDIlib_send_timecode_synthesize,
             p_data: null_mut(),
             line_stride_in_bytes: 0,
             p_metadata: null(),
             timestamp: 0,
         },
         metadata: None,
-        data: None,
+        data: vec![],
     }
 }
 
 pub struct NDISendVideoFrame {
     instance: sdk::NDIlib_video_frame_v2_t,
     metadata: Option<String>,
-    data: Option<Vec<u8>>,
+    data: Vec<u8>,
 }
 
 #[derive(Debug)]

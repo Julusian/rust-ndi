@@ -1,11 +1,9 @@
 extern crate ndi_sdk;
 extern crate png;
 
-use ndi_sdk::receive::ReceiveColorFormat;
 use ndi_sdk::NDIInstance;
 use std::fs::File;
-
-//use std::time::{Duration, Instant};
+use ndi_sdk::send::SendColorFormat;
 
 fn main() {
     let instance: NDIInstance = ndi_sdk::load().expect("Failed to construct NDI instance");
@@ -17,7 +15,7 @@ fn main() {
 
     // Create an NDI source that is called "My PNG" and is clocked to the video.
     let mut sender = instance
-        .create_send_instance("My PNG".to_string(), true, false)
+        .create_send_instance("My PNG".to_string(), false, false)
         .expect("Expected sender instance to be created");
 
     // We are going to create a frame
@@ -26,7 +24,7 @@ fn main() {
         info.height as i32,
         ndi_sdk::send::FrameFormatType::Progressive,
     )
-    .with_data(buf, info.width as i32 * 4, ReceiveColorFormat::RgbxRgba)
+    .with_data(buf, info.width as i32 * 4, SendColorFormat::Rgba)
     .build()
     .expect("Expected frame to be created");
 
