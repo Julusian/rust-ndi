@@ -22,6 +22,7 @@ impl<'a, T, T2> Deref for GuardedPointer<'a, T, T2> {
 }
 
 pub type VideoFrameData<'a> = GuardedPointer<'a, sdk::NDIlib_video_frame_v2_t, u8>;
+unsafe impl Send for VideoFrame {}
 pub struct VideoFrame {
     id: usize,
     instance: Arc<Mutex<sdk::NDIlib_video_frame_v2_t>>,
@@ -66,6 +67,7 @@ impl VideoFrame {
 }
 
 pub type AudioFrameData<'a> = GuardedPointer<'a, sdk::NDIlib_audio_frame_v2_t, f32>;
+unsafe impl Send for AudioFrame {}
 pub struct AudioFrame {
     id: usize,
     instance: Arc<Mutex<sdk::NDIlib_audio_frame_v2_t>>,
@@ -258,8 +260,6 @@ pub fn receive_capture(
     } else {
         None
     };
-    //    let mut vd2 = video_data.unwrap();
-
     let audio_data = if capture_audio {
         Some(sdk::NDIlib_audio_frame_v2_t {
             sample_rate: 0,
