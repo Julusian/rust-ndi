@@ -363,7 +363,7 @@ pub fn create_receive_instance(
     sdk_instance: Arc<NDIHandle>,
     bandwidth: ReceiveBandwidth,
     color_format: ReceiveColorFormat,
-) -> Result<ReceiveInstance, ReceiveCreateError> {
+) -> Result<Arc<ReceiveInstance>, ReceiveCreateError> {
     let props = sdk::NDIlib_recv_create_v3_t {
         source_to_connect_to: sdk::NDIlib_source_t {
             p_ndi_name: null(),
@@ -382,7 +382,7 @@ pub fn create_receive_instance(
     if instance.is_null() {
         Err(ReceiveCreateError::Failed)
     } else {
-        Ok(ReceiveInstance {
+        Ok(Arc::new(ReceiveInstance {
             sdk_instance,
             instance,
             video_frames: ReceiveDataStore {
@@ -393,6 +393,6 @@ pub fn create_receive_instance(
                 data: Mutex::new(HashMap::new()),
                 next_id: AtomicUsize::new(0),
             },
-        })
+        }))
     }
 }

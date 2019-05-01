@@ -45,7 +45,7 @@ impl NDIInstance {
         &self,
         bandwidth: ReceiveBandwidth,
         color_format: ReceiveColorFormat,
-    ) -> Result<ReceiveInstance, ReceiveCreateError> {
+    ) -> Result<Arc<ReceiveInstance>, ReceiveCreateError> {
         receive::create_receive_instance(self.handle.clone(), bandwidth, color_format)
     }
 
