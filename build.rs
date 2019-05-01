@@ -1,7 +1,6 @@
 // build.rs
 
-#[allow(unused_imports)] 
-
+#[allow(unused_imports)]
 use std::io::ErrorKind;
 use std::path::Path;
 use std::{env, fs};

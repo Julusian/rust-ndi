@@ -24,8 +24,8 @@ impl SendInstance {
     pub fn send_video(&mut self, frame: NDISendVideoFrame) {
         unsafe {
             // TODO - is this going to be a race condition?
-//            self.in_flight_video = Some(frame);
-//            self.sdk_instance.NDIlib_send_send_video_v2.unwrap()(self.instance, &self.in_flight_video.as_ref().unwrap().instance);
+            //            self.in_flight_video = Some(frame);
+            //            self.sdk_instance.NDIlib_send_send_video_v2.unwrap()(self.instance, &self.in_flight_video.as_ref().unwrap().instance);
             self.sdk_instance.NDIlib_send_send_video_v2.unwrap()(self.instance, &frame.instance);
             self.in_flight_video = Some(frame);
         }
@@ -86,12 +86,7 @@ impl NDISendVideoFrameBuilder {
         self.instance.timecode = timecode;
         self
     }
-    pub fn with_data(
-        mut self,
-        data: Vec<u8>,
-        line_stride: i32,
-        format: SendColorFormat,
-    ) -> Self {
+    pub fn with_data(mut self, data: Vec<u8>, line_stride: i32, format: SendColorFormat) -> Self {
         self.data = data;
         self.instance.line_stride_in_bytes = line_stride;
         self.instance.FourCC = format as u32;
@@ -119,7 +114,10 @@ impl NDISendVideoFrameBuilder {
                 .as_ptr();
         }
 
-        res.data.resize((res.instance.line_stride_in_bytes * res.instance.yres) as usize, 0);
+        res.data.resize(
+            (res.instance.line_stride_in_bytes * res.instance.yres) as usize,
+            0,
+        );
         res.instance.p_data = res.data.as_mut_ptr();
 
         Ok(res)

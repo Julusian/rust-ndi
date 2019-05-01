@@ -1,9 +1,9 @@
 extern crate ndi_sdk;
 extern crate png;
 
+use ndi_sdk::send::SendColorFormat;
 use ndi_sdk::NDIInstance;
 use std::fs::File;
-use ndi_sdk::send::SendColorFormat;
 
 fn main() {
     let instance: NDIInstance = ndi_sdk::load().expect("Failed to construct NDI instance");
