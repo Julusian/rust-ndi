@@ -57,14 +57,9 @@ fn main() {
     if let Some(path) = source_dir {
         let source_path = Path::new(&path);
         let dest_path = Path::new(&env::var("OUT_DIR").unwrap()).join("../../../deps");
-        fs::copy(
-            source_path.join("libndi.so.3"),
-            dest_path.join("libndi.so.3"),
-        )
-        .expect("copy libndi.so.3");
+        fs::copy(source_path.join("libndi.so.3"), dest_path.join("libndi.so.3")).expect("copy libndi.so.3");
 
-        let sl_res =
-            std::os::unix::fs::symlink(Path::new("libndi.so.3"), dest_path.join("libndi.so"));
+        let sl_res = std::os::unix::fs::symlink(Path::new("libndi.so.3"), dest_path.join("libndi.so"));
         if let Err(e) = sl_res {
             if e.kind() != ErrorKind::AlreadyExists {
                 panic!("Unknown error: {}", e);

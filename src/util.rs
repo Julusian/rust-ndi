@@ -4,9 +4,7 @@ use std::ffi::{CString, NulError};
 use std::ptr::null;
 
 // Messy return type to keep the CStrings alive long enough
-pub fn to_ndi_source(
-    source: &FindSource,
-) -> Result<(CString, Option<CString>, sdk::NDIlib_source_t), NulError> {
+pub fn to_ndi_source(source: &FindSource) -> Result<(CString, Option<CString>, sdk::NDIlib_source_t), NulError> {
     let source_name = CString::new(source.name.as_bytes())?;
     let source_url = match &source.url {
         None => None,

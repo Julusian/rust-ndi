@@ -27,10 +27,7 @@ impl FindInstance {
         unsafe {
             let mut source_count = 0;
             // Memory is freed on next call, or destroy
-            let sources = self.sdk_instance.NDIlib_find_get_current_sources.unwrap()(
-                self.instance,
-                &mut source_count,
-            );
+            let sources = self.sdk_instance.NDIlib_find_get_current_sources.unwrap()(self.instance, &mut source_count);
 
             slice::from_raw_parts(sources, source_count as usize)
                 .iter()
@@ -56,10 +53,7 @@ impl FindInstance {
     }
 }
 
-pub fn create_find_instance(
-    sdk_instance: Arc<NDIHandle>,
-    show_local_sources: bool,
-) -> Option<FindInstance> {
+pub fn create_find_instance(sdk_instance: Arc<NDIHandle>, show_local_sources: bool) -> Option<FindInstance> {
     let props = sdk::NDIlib_find_create_t {
         show_local_sources,
         p_groups: null(),
@@ -71,9 +65,6 @@ pub fn create_find_instance(
     if instance.is_null() {
         None
     } else {
-        Some(FindInstance {
-            sdk_instance,
-            instance,
-        })
+        Some(FindInstance { sdk_instance, instance })
     }
 }

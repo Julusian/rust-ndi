@@ -104,8 +104,7 @@ mod internal {
         match Library::new(lib_path) {
             Err(e) => Err(format!("Failed to load lib: {}", e)),
             Ok(lib) => unsafe {
-                let symbol: std::io::Result<Symbol<fn() -> *const sdk::NDIlib_v3>> =
-                    lib.get(b"NDIlib_v3_load");
+                let symbol: std::io::Result<Symbol<fn() -> *const sdk::NDIlib_v3>> = lib.get(b"NDIlib_v3_load");
                 match symbol {
                     Err(e) => Err(format!("Invalid lib: {}", e)),
                     Ok(s) => {

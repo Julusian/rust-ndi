@@ -367,9 +367,7 @@ pub fn create_receive_instance(
     let props = sdk::NDIlib_recv_create_v3_t {
         source_to_connect_to: sdk::NDIlib_source_t {
             p_ndi_name: null(),
-            __bindgen_anon_1: sdk::NDIlib_source_t__bindgen_ty_1 {
-                p_url_address: null(),
-            },
+            __bindgen_anon_1: sdk::NDIlib_source_t__bindgen_ty_1 { p_url_address: null() },
         },
         color_format: color_format as u32,
         bandwidth: bandwidth as i32,

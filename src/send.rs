@@ -32,10 +32,7 @@ impl SendInstance {
     }
     pub fn send_video_async(&mut self, frame: NDISendVideoFrame) {
         unsafe {
-            self.sdk_instance.NDIlib_send_send_video_async_v2.unwrap()(
-                self.instance,
-                &frame.instance,
-            );
+            self.sdk_instance.NDIlib_send_send_video_async_v2.unwrap()(self.instance, &frame.instance);
             self.in_flight_video = Some(frame);
         }
     }
@@ -114,20 +111,14 @@ impl NDISendVideoFrameBuilder {
                 .as_ptr();
         }
 
-        res.data.resize(
-            (res.instance.line_stride_in_bytes * res.instance.yres) as usize,
-            0,
-        );
+        res.data
+            .resize((res.instance.line_stride_in_bytes * res.instance.yres) as usize, 0);
         res.instance.p_data = res.data.as_mut_ptr();
 
         Ok(res)
     }
 }
-pub fn create_ndi_send_video_frame(
-    width: i32,
-    height: i32,
-    frame_type: FrameFormatType,
-) -> NDISendVideoFrameBuilder {
+pub fn create_ndi_send_video_frame(width: i32, height: i32, frame_type: FrameFormatType) -> NDISendVideoFrameBuilder {
     NDISendVideoFrameBuilder {
         instance: sdk::NDIlib_video_frame_v2_t {
             xres: width,

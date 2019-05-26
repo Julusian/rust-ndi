@@ -395,21 +395,15 @@ pub type NDIlib_framesync_instance_t = *mut ::std::os::raw::c_void;
 pub struct NDIlib_v3 {
     pub NDIlib_initialize: ::std::option::Option<unsafe extern "C" fn() -> bool>,
     pub NDIlib_destroy: ::std::option::Option<unsafe extern "C" fn()>,
-    pub NDIlib_version:
-        ::std::option::Option<unsafe extern "C" fn() -> *const ::std::os::raw::c_char>,
+    pub NDIlib_version: ::std::option::Option<unsafe extern "C" fn() -> *const ::std::os::raw::c_char>,
     pub NDIlib_is_supported_CPU: ::std::option::Option<unsafe extern "C" fn() -> bool>,
     pub NDIlib_find_create: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_create_settings: *const NDIlib_find_create_t,
-        ) -> NDIlib_find_instance_t,
+        unsafe extern "C" fn(p_create_settings: *const NDIlib_find_create_t) -> NDIlib_find_instance_t,
     >,
     pub NDIlib_find_create_v2: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_create_settings: *const NDIlib_find_create_t,
-        ) -> NDIlib_find_instance_t,
+        unsafe extern "C" fn(p_create_settings: *const NDIlib_find_create_t) -> NDIlib_find_instance_t,
     >,
-    pub NDIlib_find_destroy:
-        ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_find_instance_t)>,
+    pub NDIlib_find_destroy: ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_find_instance_t)>,
     pub NDIlib_find_get_sources: ::std::option::Option<
         unsafe extern "C" fn(
             p_instance: NDIlib_find_instance_t,
@@ -418,35 +412,20 @@ pub struct NDIlib_v3 {
         ) -> *const NDIlib_source_t,
     >,
     pub NDIlib_send_create: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_create_settings: *const NDIlib_send_create_t,
-        ) -> NDIlib_send_instance_t,
+        unsafe extern "C" fn(p_create_settings: *const NDIlib_send_create_t) -> NDIlib_send_instance_t,
     >,
-    pub NDIlib_send_destroy:
-        ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_send_instance_t)>,
+    pub NDIlib_send_destroy: ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_send_instance_t)>,
     pub NDIlib_send_send_video: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_send_instance_t,
-            p_video_data: *const NDIlib_video_frame_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_send_instance_t, p_video_data: *const NDIlib_video_frame_t),
     >,
     pub NDIlib_send_send_video_async: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_send_instance_t,
-            p_video_data: *const NDIlib_video_frame_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_send_instance_t, p_video_data: *const NDIlib_video_frame_t),
     >,
     pub NDIlib_send_send_audio: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_send_instance_t,
-            p_audio_data: *const NDIlib_audio_frame_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_send_instance_t, p_audio_data: *const NDIlib_audio_frame_t),
     >,
     pub NDIlib_send_send_metadata: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_send_instance_t,
-            p_metadata: *const NDIlib_metadata_frame_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_send_instance_t, p_metadata: *const NDIlib_metadata_frame_t),
     >,
     pub NDIlib_send_capture: ::std::option::Option<
         unsafe extern "C" fn(
@@ -456,10 +435,7 @@ pub struct NDIlib_v3 {
         ) -> NDIlib_frame_type_e,
     >,
     pub NDIlib_send_free_metadata: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_send_instance_t,
-            p_metadata: *const NDIlib_metadata_frame_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_send_instance_t, p_metadata: *const NDIlib_metadata_frame_t),
     >,
     pub NDIlib_send_get_tally: ::std::option::Option<
         unsafe extern "C" fn(
@@ -469,37 +445,23 @@ pub struct NDIlib_v3 {
         ) -> bool,
     >,
     pub NDIlib_send_get_no_connections: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_send_instance_t,
-            timeout_in_ms: u32,
-        ) -> ::std::os::raw::c_int,
+        unsafe extern "C" fn(p_instance: NDIlib_send_instance_t, timeout_in_ms: u32) -> ::std::os::raw::c_int,
     >,
     pub NDIlib_send_clear_connection_metadata:
         ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_send_instance_t)>,
     pub NDIlib_send_add_connection_metadata: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_send_instance_t,
-            p_metadata: *const NDIlib_metadata_frame_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_send_instance_t, p_metadata: *const NDIlib_metadata_frame_t),
     >,
     pub NDIlib_send_set_failover: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_send_instance_t,
-            p_failover_source: *const NDIlib_source_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_send_instance_t, p_failover_source: *const NDIlib_source_t),
     >,
     pub NDIlib_recv_create_v2: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_create_settings: *const NDIlib_recv_create_t,
-        ) -> NDIlib_recv_instance_t,
+        unsafe extern "C" fn(p_create_settings: *const NDIlib_recv_create_t) -> NDIlib_recv_instance_t,
     >,
     pub NDIlib_recv_create: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_create_settings: *const NDIlib_recv_create_t,
-        ) -> NDIlib_recv_instance_t,
+        unsafe extern "C" fn(p_create_settings: *const NDIlib_recv_create_t) -> NDIlib_recv_instance_t,
     >,
-    pub NDIlib_recv_destroy:
-        ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t)>,
+    pub NDIlib_recv_destroy: ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t)>,
     pub NDIlib_recv_capture: ::std::option::Option<
         unsafe extern "C" fn(
             p_instance: NDIlib_recv_instance_t,
@@ -510,34 +472,19 @@ pub struct NDIlib_v3 {
         ) -> NDIlib_frame_type_e,
     >,
     pub NDIlib_recv_free_video: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_recv_instance_t,
-            p_video_data: *const NDIlib_video_frame_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, p_video_data: *const NDIlib_video_frame_t),
     >,
     pub NDIlib_recv_free_audio: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_recv_instance_t,
-            p_audio_data: *const NDIlib_audio_frame_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, p_audio_data: *const NDIlib_audio_frame_t),
     >,
     pub NDIlib_recv_free_metadata: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_recv_instance_t,
-            p_metadata: *const NDIlib_metadata_frame_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, p_metadata: *const NDIlib_metadata_frame_t),
     >,
     pub NDIlib_recv_send_metadata: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_recv_instance_t,
-            p_metadata: *const NDIlib_metadata_frame_t,
-        ) -> bool,
+        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, p_metadata: *const NDIlib_metadata_frame_t) -> bool,
     >,
     pub NDIlib_recv_set_tally: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_recv_instance_t,
-            p_tally: *const NDIlib_tally_t,
-        ) -> bool,
+        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, p_tally: *const NDIlib_tally_t) -> bool,
     >,
     pub NDIlib_recv_get_performance: ::std::option::Option<
         unsafe extern "C" fn(
@@ -552,26 +499,16 @@ pub struct NDIlib_v3 {
     pub NDIlib_recv_clear_connection_metadata:
         ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t)>,
     pub NDIlib_recv_add_connection_metadata: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_recv_instance_t,
-            p_metadata: *const NDIlib_metadata_frame_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, p_metadata: *const NDIlib_metadata_frame_t),
     >,
-    pub NDIlib_recv_get_no_connections: ::std::option::Option<
-        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t) -> ::std::os::raw::c_int,
-    >,
+    pub NDIlib_recv_get_no_connections:
+        ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t) -> ::std::os::raw::c_int>,
     pub NDIlib_routing_create: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_create_settings: *const NDIlib_routing_create_t,
-        ) -> NDIlib_routing_instance_t,
+        unsafe extern "C" fn(p_create_settings: *const NDIlib_routing_create_t) -> NDIlib_routing_instance_t,
     >,
-    pub NDIlib_routing_destroy:
-        ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_routing_instance_t)>,
+    pub NDIlib_routing_destroy: ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_routing_instance_t)>,
     pub NDIlib_routing_change: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_routing_instance_t,
-            p_source: *const NDIlib_source_t,
-        ) -> bool,
+        unsafe extern "C" fn(p_instance: NDIlib_routing_instance_t, p_source: *const NDIlib_source_t) -> bool,
     >,
     pub NDIlib_routing_clear:
         ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_routing_instance_t) -> bool>,
@@ -582,37 +519,21 @@ pub struct NDIlib_v3 {
         ),
     >,
     pub NDIlib_util_audio_to_interleaved_16s: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_src: *const NDIlib_audio_frame_t,
-            p_dst: *mut NDIlib_audio_frame_interleaved_16s_t,
-        ),
+        unsafe extern "C" fn(p_src: *const NDIlib_audio_frame_t, p_dst: *mut NDIlib_audio_frame_interleaved_16s_t),
     >,
     pub NDIlib_util_audio_from_interleaved_16s: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_src: *const NDIlib_audio_frame_interleaved_16s_t,
-            p_dst: *mut NDIlib_audio_frame_t,
-        ),
+        unsafe extern "C" fn(p_src: *const NDIlib_audio_frame_interleaved_16s_t, p_dst: *mut NDIlib_audio_frame_t),
     >,
-    pub NDIlib_find_wait_for_sources: ::std::option::Option<
-        unsafe extern "C" fn(p_instance: NDIlib_find_instance_t, timeout_in_ms: u32) -> bool,
-    >,
+    pub NDIlib_find_wait_for_sources:
+        ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_find_instance_t, timeout_in_ms: u32) -> bool>,
     pub NDIlib_find_get_current_sources: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_find_instance_t,
-            p_no_sources: *mut u32,
-        ) -> *const NDIlib_source_t,
+        unsafe extern "C" fn(p_instance: NDIlib_find_instance_t, p_no_sources: *mut u32) -> *const NDIlib_source_t,
     >,
     pub NDIlib_util_audio_to_interleaved_32f: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_src: *const NDIlib_audio_frame_t,
-            p_dst: *mut NDIlib_audio_frame_interleaved_32f_t,
-        ),
+        unsafe extern "C" fn(p_src: *const NDIlib_audio_frame_t, p_dst: *mut NDIlib_audio_frame_interleaved_32f_t),
     >,
     pub NDIlib_util_audio_from_interleaved_32f: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_src: *const NDIlib_audio_frame_interleaved_32f_t,
-            p_dst: *mut NDIlib_audio_frame_t,
-        ),
+        unsafe extern "C" fn(p_src: *const NDIlib_audio_frame_interleaved_32f_t, p_dst: *mut NDIlib_audio_frame_t),
     >,
     pub NDIlib_util_send_send_audio_interleaved_32f: ::std::option::Option<
         unsafe extern "C" fn(
@@ -621,16 +542,10 @@ pub struct NDIlib_v3 {
         ),
     >,
     pub NDIlib_recv_free_video_v2: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_recv_instance_t,
-            p_video_data: *const NDIlib_video_frame_v2_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, p_video_data: *const NDIlib_video_frame_v2_t),
     >,
     pub NDIlib_recv_free_audio_v2: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_recv_instance_t,
-            p_audio_data: *const NDIlib_audio_frame_v2_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, p_audio_data: *const NDIlib_audio_frame_v2_t),
     >,
     pub NDIlib_recv_capture_v2: ::std::option::Option<
         unsafe extern "C" fn(
@@ -642,52 +557,28 @@ pub struct NDIlib_v3 {
         ) -> NDIlib_frame_type_e,
     >,
     pub NDIlib_send_send_video_v2: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_send_instance_t,
-            p_video_data: *const NDIlib_video_frame_v2_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_send_instance_t, p_video_data: *const NDIlib_video_frame_v2_t),
     >,
     pub NDIlib_send_send_video_async_v2: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_send_instance_t,
-            p_video_data: *const NDIlib_video_frame_v2_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_send_instance_t, p_video_data: *const NDIlib_video_frame_v2_t),
     >,
     pub NDIlib_send_send_audio_v2: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_send_instance_t,
-            p_audio_data: *const NDIlib_audio_frame_v2_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_send_instance_t, p_audio_data: *const NDIlib_audio_frame_v2_t),
     >,
     pub NDIlib_util_audio_to_interleaved_16s_v2: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_src: *const NDIlib_audio_frame_v2_t,
-            p_dst: *mut NDIlib_audio_frame_interleaved_16s_t,
-        ),
+        unsafe extern "C" fn(p_src: *const NDIlib_audio_frame_v2_t, p_dst: *mut NDIlib_audio_frame_interleaved_16s_t),
     >,
     pub NDIlib_util_audio_from_interleaved_16s_v2: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_src: *const NDIlib_audio_frame_interleaved_16s_t,
-            p_dst: *mut NDIlib_audio_frame_v2_t,
-        ),
+        unsafe extern "C" fn(p_src: *const NDIlib_audio_frame_interleaved_16s_t, p_dst: *mut NDIlib_audio_frame_v2_t),
     >,
     pub NDIlib_util_audio_to_interleaved_32f_v2: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_src: *const NDIlib_audio_frame_v2_t,
-            p_dst: *mut NDIlib_audio_frame_interleaved_32f_t,
-        ),
+        unsafe extern "C" fn(p_src: *const NDIlib_audio_frame_v2_t, p_dst: *mut NDIlib_audio_frame_interleaved_32f_t),
     >,
     pub NDIlib_util_audio_from_interleaved_32f_v2: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_src: *const NDIlib_audio_frame_interleaved_32f_t,
-            p_dst: *mut NDIlib_audio_frame_v2_t,
-        ),
+        unsafe extern "C" fn(p_src: *const NDIlib_audio_frame_interleaved_32f_t, p_dst: *mut NDIlib_audio_frame_v2_t),
     >,
     pub NDIlib_recv_free_string: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_recv_instance_t,
-            p_string: *const ::std::os::raw::c_char,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, p_string: *const ::std::os::raw::c_char),
     >,
     pub NDIlib_recv_ptz_is_supported:
         ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t) -> bool>,
@@ -696,47 +587,28 @@ pub struct NDIlib_v3 {
     pub NDIlib_recv_get_web_control: ::std::option::Option<
         unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t) -> *const ::std::os::raw::c_char,
     >,
-    pub NDIlib_recv_ptz_zoom: ::std::option::Option<
-        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, zoom_value: f32) -> bool,
-    >,
-    pub NDIlib_recv_ptz_zoom_speed: ::std::option::Option<
-        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, zoom_speed: f32) -> bool,
-    >,
+    pub NDIlib_recv_ptz_zoom:
+        ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, zoom_value: f32) -> bool>,
+    pub NDIlib_recv_ptz_zoom_speed:
+        ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, zoom_speed: f32) -> bool>,
     pub NDIlib_recv_ptz_pan_tilt: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_recv_instance_t,
-            pan_value: f32,
-            tilt_value: f32,
-        ) -> bool,
+        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, pan_value: f32, tilt_value: f32) -> bool,
     >,
     pub NDIlib_recv_ptz_pan_tilt_speed: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_recv_instance_t,
-            pan_speed: f32,
-            tilt_speed: f32,
-        ) -> bool,
+        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, pan_speed: f32, tilt_speed: f32) -> bool,
     >,
     pub NDIlib_recv_ptz_store_preset: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_recv_instance_t,
-            preset_no: ::std::os::raw::c_int,
-        ) -> bool,
+        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, preset_no: ::std::os::raw::c_int) -> bool,
     >,
     pub NDIlib_recv_ptz_recall_preset: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_recv_instance_t,
-            preset_no: ::std::os::raw::c_int,
-            speed: f32,
-        ) -> bool,
+        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, preset_no: ::std::os::raw::c_int, speed: f32) -> bool,
     >,
     pub NDIlib_recv_ptz_auto_focus:
         ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t) -> bool>,
-    pub NDIlib_recv_ptz_focus: ::std::option::Option<
-        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, focus_value: f32) -> bool,
-    >,
-    pub NDIlib_recv_ptz_focus_speed: ::std::option::Option<
-        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, focus_speed: f32) -> bool,
-    >,
+    pub NDIlib_recv_ptz_focus:
+        ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, focus_value: f32) -> bool>,
+    pub NDIlib_recv_ptz_focus_speed:
+        ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, focus_speed: f32) -> bool>,
     pub NDIlib_recv_ptz_white_balance_auto:
         ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t) -> bool>,
     pub NDIlib_recv_ptz_white_balance_indoor:
@@ -745,14 +617,12 @@ pub struct NDIlib_v3 {
         ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t) -> bool>,
     pub NDIlib_recv_ptz_white_balance_oneshot:
         ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t) -> bool>,
-    pub NDIlib_recv_ptz_white_balance_manual: ::std::option::Option<
-        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, red: f32, blue: f32) -> bool,
-    >,
+    pub NDIlib_recv_ptz_white_balance_manual:
+        ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, red: f32, blue: f32) -> bool>,
     pub NDIlib_recv_ptz_exposure_auto:
         ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t) -> bool>,
-    pub NDIlib_recv_ptz_exposure_manual: ::std::option::Option<
-        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, exposure_level: f32) -> bool,
-    >,
+    pub NDIlib_recv_ptz_exposure_manual:
+        ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, exposure_level: f32) -> bool>,
     pub NDIlib_recv_recording_start: ::std::option::Option<
         unsafe extern "C" fn(
             p_instance: NDIlib_recv_instance_t,
@@ -761,9 +631,8 @@ pub struct NDIlib_v3 {
     >,
     pub NDIlib_recv_recording_stop:
         ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t) -> bool>,
-    pub NDIlib_recv_recording_set_audio_level: ::std::option::Option<
-        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, level_dB: f32) -> bool,
-    >,
+    pub NDIlib_recv_recording_set_audio_level:
+        ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, level_dB: f32) -> bool>,
     pub NDIlib_recv_recording_is_recording:
         ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t) -> bool>,
     pub NDIlib_recv_recording_get_filename: ::std::option::Option<
@@ -773,19 +642,13 @@ pub struct NDIlib_v3 {
         unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t) -> *const ::std::os::raw::c_char,
     >,
     pub NDIlib_recv_recording_get_times: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_recv_instance_t,
-            p_times: *mut NDIlib_recv_recording_time_t,
-        ) -> bool,
+        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, p_times: *mut NDIlib_recv_recording_time_t) -> bool,
     >,
     pub NDIlib_recv_create_v3: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_create_settings: *const NDIlib_recv_create_v3_t,
-        ) -> NDIlib_recv_instance_t,
+        unsafe extern "C" fn(p_create_settings: *const NDIlib_recv_create_v3_t) -> NDIlib_recv_instance_t,
     >,
-    pub NDIlib_recv_connect: ::std::option::Option<
-        unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, p_src: *const NDIlib_source_t),
-    >,
+    pub NDIlib_recv_connect:
+        ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_recv_instance_t, p_src: *const NDIlib_source_t)>,
     pub NDIlib_send_create_v2: ::std::option::Option<
         unsafe extern "C" fn(
             p_create_settings: *const NDIlib_send_create_t,
@@ -811,22 +674,14 @@ pub struct NDIlib_v3 {
         ),
     >,
     pub NDIlib_util_audio_to_interleaved_32s_v2: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_src: *const NDIlib_audio_frame_v2_t,
-            p_dst: *mut NDIlib_audio_frame_interleaved_32s_t,
-        ),
+        unsafe extern "C" fn(p_src: *const NDIlib_audio_frame_v2_t, p_dst: *mut NDIlib_audio_frame_interleaved_32s_t),
     >,
     pub NDIlib_util_audio_from_interleaved_32s_v2: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_src: *const NDIlib_audio_frame_interleaved_32s_t,
-            p_dst: *mut NDIlib_audio_frame_v2_t,
-        ),
+        unsafe extern "C" fn(p_src: *const NDIlib_audio_frame_interleaved_32s_t, p_dst: *mut NDIlib_audio_frame_v2_t),
     >,
-    pub NDIlib_framesync_create: ::std::option::Option<
-        unsafe extern "C" fn(p_receiver: NDIlib_recv_instance_t) -> NDIlib_framesync_instance_t,
-    >,
-    pub NDIlib_framesync_destroy:
-        ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_framesync_instance_t)>,
+    pub NDIlib_framesync_create:
+        ::std::option::Option<unsafe extern "C" fn(p_receiver: NDIlib_recv_instance_t) -> NDIlib_framesync_instance_t>,
+    pub NDIlib_framesync_destroy: ::std::option::Option<unsafe extern "C" fn(p_instance: NDIlib_framesync_instance_t)>,
     pub NDIlib_framesync_capture_audio: ::std::option::Option<
         unsafe extern "C" fn(
             p_instance: NDIlib_framesync_instance_t,
@@ -837,10 +692,7 @@ pub struct NDIlib_v3 {
         ),
     >,
     pub NDIlib_framesync_free_audio: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_framesync_instance_t,
-            p_audio_data: *mut NDIlib_audio_frame_v2_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_framesync_instance_t, p_audio_data: *mut NDIlib_audio_frame_v2_t),
     >,
     pub NDIlib_framesync_capture_video: ::std::option::Option<
         unsafe extern "C" fn(
@@ -850,10 +702,7 @@ pub struct NDIlib_v3 {
         ),
     >,
     pub NDIlib_framesync_free_video: ::std::option::Option<
-        unsafe extern "C" fn(
-            p_instance: NDIlib_framesync_instance_t,
-            p_video_data: *mut NDIlib_video_frame_v2_t,
-        ),
+        unsafe extern "C" fn(p_instance: NDIlib_framesync_instance_t, p_video_data: *mut NDIlib_video_frame_v2_t),
     >,
 }
 pub type NDIlib_v2 = NDIlib_v3;

@@ -1,8 +1,6 @@
 extern crate ndi_sdk;
 
-use ndi_sdk::receive::{
-    receive_capture, ReceiveBandwidth, ReceiveCaptureResult, ReceiveColorFormat,
-};
+use ndi_sdk::receive::{receive_capture, ReceiveBandwidth, ReceiveCaptureResult, ReceiveColorFormat};
 use ndi_sdk::NDIInstance;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
