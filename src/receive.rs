@@ -23,6 +23,7 @@ impl<'a, T, T2> Deref for GuardedPointer<'a, T, T2> {
 
 pub type VideoFrameData<'a> = GuardedPointer<'a, sdk::NDIlib_video_frame_v2_t, u8>;
 unsafe impl Send for VideoFrame {}
+unsafe impl Sync for VideoFrame {}
 pub struct VideoFrame {
     id: usize,
     instance: Arc<Mutex<sdk::NDIlib_video_frame_v2_t>>,
@@ -36,11 +37,11 @@ pub struct VideoFrame {
     //    pub FourCC: NDIlib_FourCC_type_e,
     //    pub picture_aspect_ratio: f32,
     //    pub frame_format_type: NDIlib_frame_format_type_e,
-    //    pub timecode: i64,
+    pub timecode: i64,
     //    pub p_data: *mut u8,
     //    pub line_stride_in_bytes: ::std::os::raw::c_int,
     //    pub p_metadata: *const ::std::os::raw::c_char,
-    //    pub timestamp: i64,
+    pub timestamp: i64,
 }
 impl Drop for VideoFrame {
     fn drop(&mut self) {
@@ -68,6 +69,7 @@ impl VideoFrame {
 
 pub type AudioFrameData<'a> = GuardedPointer<'a, sdk::NDIlib_audio_frame_v2_t, f32>;
 unsafe impl Send for AudioFrame {}
+unsafe impl Sync for AudioFrame {}
 pub struct AudioFrame {
     id: usize,
     instance: Arc<Mutex<sdk::NDIlib_audio_frame_v2_t>>,
@@ -136,6 +138,7 @@ impl<T> ReceiveDataStore<T> {
 }
 
 unsafe impl Send for ReceiveInstance {}
+unsafe impl Sync for ReceiveInstance {} // TODO - is this true? what is safety of methods on instance like?
 pub struct ReceiveInstance {
     sdk_instance: Arc<NDIHandle>,
     instance: sdk::NDIlib_recv_instance_t,
@@ -235,105 +238,121 @@ pub enum ReceiveCaptureResult {
     Metadata(u32),
 }
 
-pub fn receive_capture(
-    recv: &Arc<ReceiveInstance>,
-    capture_video: bool,
-    capture_audio: bool,
-    capture_metadata: bool,
-    timeout: u32,
-) -> Result<ReceiveCaptureResult, ReceiveCaptureError> {
-    let video_data = if capture_video {
-        Some(sdk::NDIlib_video_frame_v2_t {
-            xres: 0,
-            yres: 0,
-            FourCC: Default::default(),
-            frame_rate_N: 0,
-            frame_rate_D: 0,
-            picture_aspect_ratio: 0.0,
-            frame_format_type: Default::default(),
-            timecode: 0,
-            p_data: null_mut(),
-            line_stride_in_bytes: 0,
-            p_metadata: null(),
-            timestamp: 0,
-        })
-    } else {
-        None
-    };
-    let audio_data = if capture_audio {
-        Some(sdk::NDIlib_audio_frame_v2_t {
-            sample_rate: 0,
-            no_channels: 0,
-            no_samples: 0,
-            timecode: 0,
-            p_data: null_mut(),
-            channel_stride_in_bytes: 0,
-            p_metadata: null(),
-            timestamp: 0,
-        })
-    } else {
-        None
-    };
-    let metadata = if capture_metadata {
-        Some(sdk::NDIlib_metadata_frame_t {
-            length: 0,
-            timecode: 0,
-            p_data: null_mut(),
-        })
-    } else {
-        None
-    };
+pub trait ReceiveInstanceExt {
+    fn receive_capture(
+        &self,
+        capture_video: bool,
+        capture_audio: bool,
+        capture_metadata: bool,
+        timeout: u32,
+    ) -> Result<ReceiveCaptureResult, ReceiveCaptureError>;
+}
 
-    let captured = unsafe {
-        recv.sdk_instance.NDIlib_recv_capture_v2.unwrap()(
-            recv.instance,
-            video_data.as_ref().as_ptr() as *mut sdk::NDIlib_video_frame_v2_t,
-            audio_data.as_ref().as_ptr() as *mut sdk::NDIlib_audio_frame_v2_t,
-            metadata.as_ref().as_ptr() as *mut sdk::NDIlib_metadata_frame_t,
-            timeout,
-        )
-    };
-    match captured {
-        sdk::NDIlib_frame_type_video => match video_data {
-            None => Err(ReceiveCaptureError::Failed),
-            Some(video_data) => match recv.video_frames.track(video_data) {
-                None => Err(ReceiveCaptureError::Poisoned),
-                Some(v) => {
-                    let frame = VideoFrame {
-                        id: v.0,
-                        instance: v.1,
-                        parent: Arc::downgrade(recv),
+impl ReceiveInstanceExt for Arc<ReceiveInstance> {
+    fn receive_capture(
+        &self,
+        capture_video: bool,
+        capture_audio: bool,
+        capture_metadata: bool,
+        timeout: u32,
+    ) -> Result<ReceiveCaptureResult, ReceiveCaptureError> {
+        let video_data = if capture_video {
+            Some(sdk::NDIlib_video_frame_v2_t {
+                xres: 0,
+                yres: 0,
+                FourCC: Default::default(),
+                frame_rate_N: 0,
+                frame_rate_D: 0,
+                picture_aspect_ratio: 0.0,
+                frame_format_type: Default::default(),
+                timecode: 0,
+                p_data: null_mut(),
+                line_stride_in_bytes: 0,
+                p_metadata: null(),
+                timestamp: 0,
+            })
+        } else {
+            None
+        };
+        let audio_data = if capture_audio {
+            Some(sdk::NDIlib_audio_frame_v2_t {
+                sample_rate: 0,
+                no_channels: 0,
+                no_samples: 0,
+                timecode: 0,
+                p_data: null_mut(),
+                channel_stride_in_bytes: 0,
+                p_metadata: null(),
+                timestamp: 0,
+            })
+        } else {
+            None
+        };
+        let metadata = if capture_metadata {
+            Some(sdk::NDIlib_metadata_frame_t {
+                length: 0,
+                timecode: 0,
+                p_data: null_mut(),
+            })
+        } else {
+            None
+        };
 
-                        width: video_data.xres,
-                        height: video_data.yres,
+        let captured = unsafe {
+            self.sdk_instance.NDIlib_recv_capture_v2.unwrap()(
+                self.instance,
+                video_data.as_ref().as_ptr() as *mut sdk::NDIlib_video_frame_v2_t,
+                audio_data.as_ref().as_ptr() as *mut sdk::NDIlib_audio_frame_v2_t,
+                metadata.as_ref().as_ptr() as *mut sdk::NDIlib_metadata_frame_t,
+                timeout,
+            )
+        };
+        match captured {
+            sdk::NDIlib_frame_type_video => match video_data {
+                None => Err(ReceiveCaptureError::Failed),
+                Some(video_data) => match self.video_frames.track(video_data) {
+                    None => Err(ReceiveCaptureError::Poisoned),
+                    Some(v) => {
+                        let frame = VideoFrame {
+                            id: v.0,
+                            instance: v.1,
+                            parent: Arc::downgrade(self),
 
-                        frame_rate_d: video_data.frame_rate_D,
-                        frame_rate_n: video_data.frame_rate_N,
-                    };
-                    Ok(ReceiveCaptureResult::Video(frame))
-                }
+                            width: video_data.xres,
+                            height: video_data.yres,
+
+                            frame_rate_d: video_data.frame_rate_D,
+                            frame_rate_n: video_data.frame_rate_N,
+
+                            timecode: video_data.timecode,
+
+                            timestamp: video_data.timestamp,
+                        };
+                        Ok(ReceiveCaptureResult::Video(frame))
+                    }
+                },
             },
-        },
-        sdk::NDIlib_frame_type_audio => match audio_data {
-            None => Err(ReceiveCaptureError::Failed),
-            Some(audio_data) => match recv.audio_frames.track(audio_data) {
-                None => Err(ReceiveCaptureError::Poisoned),
-                Some(v) => {
-                    let frame = AudioFrame {
-                        id: v.0,
-                        instance: v.1,
-                        parent: Arc::downgrade(recv),
+            sdk::NDIlib_frame_type_audio => match audio_data {
+                None => Err(ReceiveCaptureError::Failed),
+                Some(audio_data) => match self.audio_frames.track(audio_data) {
+                    None => Err(ReceiveCaptureError::Poisoned),
+                    Some(v) => {
+                        let frame = AudioFrame {
+                            id: v.0,
+                            instance: v.1,
+                            parent: Arc::downgrade(self),
 
-                        sample_rate: audio_data.sample_rate,
-                        channel_count: audio_data.no_channels,
-                        sample_count: audio_data.no_samples,
-                    };
-                    Ok(ReceiveCaptureResult::Audio(frame))
-                }
+                            sample_rate: audio_data.sample_rate,
+                            channel_count: audio_data.no_channels,
+                            sample_count: audio_data.no_samples,
+                        };
+                        Ok(ReceiveCaptureResult::Audio(frame))
+                    }
+                },
             },
-        },
-        sdk::NDIlib_frame_type_none => Ok(ReceiveCaptureResult::None),
-        _ => Err(ReceiveCaptureError::Invalid),
+            sdk::NDIlib_frame_type_none => Ok(ReceiveCaptureResult::None),
+            _ => Err(ReceiveCaptureError::Invalid),
+        }
     }
 }
 
