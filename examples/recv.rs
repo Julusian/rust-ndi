@@ -1,8 +1,7 @@
 extern crate ndi_sdk;
 
-use ndi_sdk::receive::{receive_capture, ReceiveBandwidth, ReceiveCaptureResult, ReceiveColorFormat};
+use ndi_sdk::receive::{ReceiveBandwidth, ReceiveCaptureResult, ReceiveColorFormat, ReceiveInstanceExt};
 use ndi_sdk::NDIInstance;
-use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 fn main() {
@@ -28,11 +27,9 @@ fn main() {
     println!("Found source: {}", source.name);
 
     // We now have at least one source, so we create a receiver to look at it.
-    let receiver = Arc::new(
-        instance
-            .create_receive_instance(ReceiveBandwidth::Highest, ReceiveColorFormat::Fastest)
-            .expect("create receiver"),
-    );
+    let receiver = instance
+        .create_receive_instance(ReceiveBandwidth::Highest, ReceiveColorFormat::Fastest)
+        .expect("create receiver");
 
     // Connect to our sources
     assert!(receiver.connect(Some(&source)));
@@ -44,7 +41,7 @@ fn main() {
             break;
         }
 
-        let c = receive_capture(&receiver, true, true, false, 5000);
+        let c = receiver.receive_capture(true, true, false, 5000);
         match c {
             Err(e) => println!("Capture failed: {:?}", e),
             Ok(c) => match c {
