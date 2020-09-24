@@ -3,6 +3,7 @@ use crate::util::to_ndi_source;
 use crate::{sdk, NDIHandle};
 use ptrplus::AsPtr;
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::ops::Deref;
 use std::ptr::{null, null_mut};
 use std::slice;
@@ -24,6 +25,29 @@ impl<'a, T, T2> Deref for GuardedPointer<'a, T, T2> {
 pub type VideoFrameData<'a> = GuardedPointer<'a, sdk::NDIlib_video_frame_v2_t, u8>;
 unsafe impl Send for VideoFrame {}
 unsafe impl Sync for VideoFrame {}
+
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
+pub enum FrameFormatType {
+    Progressive = sdk::NDIlib_frame_format_type_progressive as isize,
+    Interlaced = sdk::NDIlib_frame_format_type_interleaved as isize,
+    Field0 = sdk::NDIlib_frame_format_type_field_0 as isize,
+    Field1 = sdk::NDIlib_frame_format_type_field_1 as isize,
+}
+
+impl TryFrom<u32> for FrameFormatType {
+    type Error = ();
+
+    fn try_from(v: u32) -> Result<Self, Self::Error> {
+        match v {
+            x if x == FrameFormatType::Progressive as u32 => Ok(FrameFormatType::Progressive),
+            x if x == FrameFormatType::Interlaced as u32 => Ok(FrameFormatType::Interlaced),
+            x if x == FrameFormatType::Field0 as u32 => Ok(FrameFormatType::Field0),
+            x if x == FrameFormatType::Field1 as u32 => Ok(FrameFormatType::Field1),
+            _ => Err(()),
+        }
+    }
+}
+
 pub struct VideoFrame {
     id: usize,
     instance: Arc<Mutex<sdk::NDIlib_video_frame_v2_t>>,
@@ -36,7 +60,7 @@ pub struct VideoFrame {
     pub frame_rate_d: i32,
     //    pub FourCC: NDIlib_FourCC_type_e,
     //    pub picture_aspect_ratio: f32,
-    //    pub frame_format_type: NDIlib_frame_format_type_e,
+    pub frame_format_type: FrameFormatType,
     pub timecode: i64,
     //    pub p_data: *mut u8,
     //    pub line_stride_in_bytes: ::std::os::raw::c_int,
@@ -313,6 +337,10 @@ impl ReceiveInstanceExt for Arc<ReceiveInstance> {
                 Some(video_data) => match self.video_frames.track(video_data) {
                     None => Err(ReceiveCaptureError::Poisoned),
                     Some(v) => {
+                        let frame_format_type = FrameFormatType::try_from(video_data.frame_format_type);
+                        if frame_format_type.is_err() {
+                            return Err(ReceiveCaptureError::Invalid);
+                        }
                         let frame = VideoFrame {
                             id: v.0,
                             instance: v.1,
@@ -325,7 +353,7 @@ impl ReceiveInstanceExt for Arc<ReceiveInstance> {
                             frame_rate_n: video_data.frame_rate_N,
 
                             timecode: video_data.timecode,
-
+                            frame_format_type: frame_format_type.unwrap(),
                             timestamp: video_data.timestamp,
                         };
                         Ok(ReceiveCaptureResult::Video(frame))
