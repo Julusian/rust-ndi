@@ -48,6 +48,40 @@ impl TryFrom<u32> for FrameFormatType {
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
+pub enum FourCCType {
+    UYVY = sdk::NDIlib_FourCC_type_UYVY as isize,
+    UYVA = sdk::NDIlib_FourCC_type_UYVA as isize,
+    // P216 = sdk::NDIlib_FourCC_type_P216 as isize,
+    // PA16 = sdk::NDIlib_FourCC_type_PA16 as isize,
+    YV12 = sdk::NDIlib_FourCC_type_YV12 as isize,
+    I420 = sdk::NDIlib_FourCC_type_I420 as isize,
+    NV12 = sdk::NDIlib_FourCC_type_NV12 as isize,
+    BGRA = sdk::NDIlib_FourCC_type_BGRA as isize,
+    BGRX = sdk::NDIlib_FourCC_type_BGRX as isize,
+    RGBA = sdk::NDIlib_FourCC_type_RGBA as isize,
+    RGBX = sdk::NDIlib_FourCC_type_RGBX as isize,
+}
+
+impl TryFrom<u32> for FourCCType {
+    type Error = ();
+
+    fn try_from(v: u32) -> Result<Self, Self::Error> {
+        match v {
+            x if x == FourCCType::UYVY as u32 => Ok(FourCCType::UYVY),
+            x if x == FourCCType::UYVA as u32 => Ok(FourCCType::UYVA),
+            x if x == FourCCType::YV12 as u32 => Ok(FourCCType::YV12),
+            x if x == FourCCType::I420 as u32 => Ok(FourCCType::I420),
+            x if x == FourCCType::NV12 as u32 => Ok(FourCCType::NV12),
+            x if x == FourCCType::BGRA as u32 => Ok(FourCCType::BGRA),
+            x if x == FourCCType::BGRX as u32 => Ok(FourCCType::BGRX),
+            x if x == FourCCType::RGBA as u32 => Ok(FourCCType::RGBA),
+            x if x == FourCCType::RGBX as u32 => Ok(FourCCType::RGBX),
+            _ => Err(()),
+        }
+    }
+}
+
 pub struct VideoFrame {
     id: usize,
     instance: Arc<Mutex<sdk::NDIlib_video_frame_v2_t>>,
@@ -58,7 +92,7 @@ pub struct VideoFrame {
 
     pub frame_rate_n: i32,
     pub frame_rate_d: i32,
-    //    pub FourCC: NDIlib_FourCC_type_e,
+    pub four_cc_type: FourCCType,
     //    pub picture_aspect_ratio: f32,
     pub frame_format_type: FrameFormatType,
     pub timecode: i64,
@@ -246,6 +280,12 @@ pub enum ReceiveCaptureError {
     Invalid,
 }
 
+impl From<()> for ReceiveCaptureError {
+    fn from(_err: ()) -> ReceiveCaptureError {
+        ReceiveCaptureError::Invalid
+    }
+}
+
 #[derive(Debug)]
 pub enum ReceiveCaptureResultType {
     None,
@@ -337,10 +377,6 @@ impl ReceiveInstanceExt for Arc<ReceiveInstance> {
                 Some(video_data) => match self.video_frames.track(video_data) {
                     None => Err(ReceiveCaptureError::Poisoned),
                     Some(v) => {
-                        let frame_format_type = FrameFormatType::try_from(video_data.frame_format_type);
-                        if frame_format_type.is_err() {
-                            return Err(ReceiveCaptureError::Invalid);
-                        }
                         let frame = VideoFrame {
                             id: v.0,
                             instance: v.1,
@@ -353,7 +389,8 @@ impl ReceiveInstanceExt for Arc<ReceiveInstance> {
                             frame_rate_n: video_data.frame_rate_N,
 
                             timecode: video_data.timecode,
-                            frame_format_type: frame_format_type.unwrap(),
+                            four_cc_type: FourCCType::try_from(video_data.FourCC)?,
+                            frame_format_type: FrameFormatType::try_from(video_data.frame_format_type)?,
                             timestamp: video_data.timestamp,
                         };
                         Ok(ReceiveCaptureResult::Video(frame))
