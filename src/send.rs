@@ -42,6 +42,11 @@ impl SendInstance {
             self.in_flight_video = None;
         }
     }
+    pub fn send_audio(&mut self, frame: NDISendAudioFrame) {
+        unsafe {
+            self.sdk_instance.NDIlib_send_send_audio_v2.unwrap()(self.instance, &frame.instance);
+        }
+    }
 }
 
 pub enum FrameFormatType {
@@ -118,6 +123,37 @@ impl NDISendVideoFrameBuilder {
         Ok(res)
     }
 }
+
+pub struct NDISendAudioFrameBuilder {
+    instance: sdk::NDIlib_audio_frame_v2_t,
+    data: Vec<f32>,
+}
+
+impl NDISendAudioFrameBuilder {
+    pub fn with_timecode(mut self, timecode: i64) -> Self {
+        self.instance.timecode = timecode;
+        self
+    }
+    pub fn with_data(mut self, data: Vec<f32>, sample_count: i32) -> Self {
+        self.data = data;
+        self.instance.no_samples = sample_count;
+        self.instance.channel_stride_in_bytes = (self.instance.no_samples)*4;
+        self
+    }
+    pub fn with_timestamp(mut self, timestamp: i64) -> Self {
+        self.instance.timestamp = timestamp;
+        self
+    }
+    pub fn build(self) -> Result<NDISendAudioFrame, SendCreateError> {
+        // TODO - change return error type
+        let mut res = NDISendAudioFrame {
+            instance: self.instance,
+            data: self.data,
+        };
+        res.instance.p_data = res.data.as_mut_ptr();
+        Ok(res)
+    }
+}
 pub fn create_ndi_send_video_frame(width: i32, height: i32, frame_type: FrameFormatType) -> NDISendVideoFrameBuilder {
     NDISendVideoFrameBuilder {
         instance: sdk::NDIlib_video_frame_v2_t {
@@ -139,10 +175,31 @@ pub fn create_ndi_send_video_frame(width: i32, height: i32, frame_type: FrameFor
     }
 }
 
+pub fn create_ndi_send_audio_frame(channel_count: i32, sample_rate: i32) -> NDISendAudioFrameBuilder {
+    NDISendAudioFrameBuilder {
+        instance: sdk::NDIlib_audio_frame_v2_t {
+            sample_rate,
+            no_channels: channel_count,
+            no_samples: 0,
+            timecode: sdk::NDIlib_send_timecode_synthesize,
+            channel_stride_in_bytes: 0,
+            p_data: null_mut(),
+            p_metadata: null(),
+            timestamp: 0,
+        },
+        data: vec![],
+    }
+}
+
 pub struct NDISendVideoFrame {
     instance: sdk::NDIlib_video_frame_v2_t,
     metadata: Option<String>,
     data: Vec<u8>,
+}
+
+pub struct NDISendAudioFrame {
+    instance: sdk::NDIlib_audio_frame_v2_t,
+    data: Vec<f32>,
 }
 
 #[derive(Debug)]

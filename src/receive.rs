@@ -78,11 +78,11 @@ pub struct AudioFrame {
     pub sample_rate: i32,
     pub channel_count: i32,
     pub sample_count: i32,
-    //    pub timecode: i64,
+    pub timecode: i64,
     //    pub p_data: *mut f32,
     //    pub channel_stride_in_bytes: ::std::os::raw::c_int,
     //    pub p_metadata: *const ::std::os::raw::c_char,
-    //    pub timestamp: i64,
+    pub timestamp: i64,
 }
 impl Drop for AudioFrame {
     fn drop(&mut self) {
@@ -95,7 +95,8 @@ impl AudioFrame {
     pub fn lock_data(&self) -> Option<AudioFrameData> {
         if let Ok(locked) = self.instance.lock() {
             unsafe {
-                let len = locked.channel_stride_in_bytes * locked.no_channels;
+                // Divide by four as this is a list of f32
+                let len = locked.channel_stride_in_bytes * locked.no_channels / 4; 
                 let data = slice::from_raw_parts(locked.p_data, len as usize);
                 Some(GuardedPointer {
                     _guard: locked,
@@ -345,6 +346,8 @@ impl ReceiveInstanceExt for Arc<ReceiveInstance> {
                             sample_rate: audio_data.sample_rate,
                             channel_count: audio_data.no_channels,
                             sample_count: audio_data.no_samples,
+                            timecode: audio_data.timecode,
+                            timestamp: audio_data.timestamp,
                         };
                         Ok(ReceiveCaptureResult::Audio(frame))
                     }
