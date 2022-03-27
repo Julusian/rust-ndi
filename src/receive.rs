@@ -3,6 +3,7 @@ use crate::util::to_ndi_source;
 use crate::{sdk, NDIHandle};
 use ptrplus::AsPtr;
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::ops::Deref;
 use std::ptr::{null, null_mut};
 use std::slice;
@@ -24,6 +25,63 @@ impl<'a, T, T2> Deref for GuardedPointer<'a, T, T2> {
 pub type VideoFrameData<'a> = GuardedPointer<'a, sdk::NDIlib_video_frame_v2_t, u8>;
 unsafe impl Send for VideoFrame {}
 unsafe impl Sync for VideoFrame {}
+
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
+pub enum FrameFormatType {
+    Progressive = sdk::NDIlib_frame_format_type_progressive as isize,
+    Interlaced = sdk::NDIlib_frame_format_type_interleaved as isize,
+    Field0 = sdk::NDIlib_frame_format_type_field_0 as isize,
+    Field1 = sdk::NDIlib_frame_format_type_field_1 as isize,
+}
+
+impl TryFrom<u32> for FrameFormatType {
+    type Error = ();
+
+    fn try_from(v: u32) -> Result<Self, Self::Error> {
+        match v {
+            x if x == FrameFormatType::Progressive as u32 => Ok(FrameFormatType::Progressive),
+            x if x == FrameFormatType::Interlaced as u32 => Ok(FrameFormatType::Interlaced),
+            x if x == FrameFormatType::Field0 as u32 => Ok(FrameFormatType::Field0),
+            x if x == FrameFormatType::Field1 as u32 => Ok(FrameFormatType::Field1),
+            _ => Err(()),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
+pub enum FourCCType {
+    UYVY = sdk::NDIlib_FourCC_type_UYVY as isize,
+    UYVA = sdk::NDIlib_FourCC_type_UYVA as isize,
+    // P216 = sdk::NDIlib_FourCC_type_P216 as isize,
+    // PA16 = sdk::NDIlib_FourCC_type_PA16 as isize,
+    YV12 = sdk::NDIlib_FourCC_type_YV12 as isize,
+    I420 = sdk::NDIlib_FourCC_type_I420 as isize,
+    NV12 = sdk::NDIlib_FourCC_type_NV12 as isize,
+    BGRA = sdk::NDIlib_FourCC_type_BGRA as isize,
+    BGRX = sdk::NDIlib_FourCC_type_BGRX as isize,
+    RGBA = sdk::NDIlib_FourCC_type_RGBA as isize,
+    RGBX = sdk::NDIlib_FourCC_type_RGBX as isize,
+}
+
+impl TryFrom<u32> for FourCCType {
+    type Error = ();
+
+    fn try_from(v: u32) -> Result<Self, Self::Error> {
+        match v {
+            x if x == FourCCType::UYVY as u32 => Ok(FourCCType::UYVY),
+            x if x == FourCCType::UYVA as u32 => Ok(FourCCType::UYVA),
+            x if x == FourCCType::YV12 as u32 => Ok(FourCCType::YV12),
+            x if x == FourCCType::I420 as u32 => Ok(FourCCType::I420),
+            x if x == FourCCType::NV12 as u32 => Ok(FourCCType::NV12),
+            x if x == FourCCType::BGRA as u32 => Ok(FourCCType::BGRA),
+            x if x == FourCCType::BGRX as u32 => Ok(FourCCType::BGRX),
+            x if x == FourCCType::RGBA as u32 => Ok(FourCCType::RGBA),
+            x if x == FourCCType::RGBX as u32 => Ok(FourCCType::RGBX),
+            _ => Err(()),
+        }
+    }
+}
+
 pub struct VideoFrame {
     id: usize,
     instance: Arc<Mutex<sdk::NDIlib_video_frame_v2_t>>,
@@ -34,9 +92,9 @@ pub struct VideoFrame {
 
     pub frame_rate_n: i32,
     pub frame_rate_d: i32,
-    //    pub FourCC: NDIlib_FourCC_type_e,
+    pub four_cc_type: FourCCType,
     //    pub picture_aspect_ratio: f32,
-    //    pub frame_format_type: NDIlib_frame_format_type_e,
+    pub frame_format_type: FrameFormatType,
     pub timecode: i64,
     //    pub p_data: *mut u8,
     //    pub line_stride_in_bytes: ::std::os::raw::c_int,
@@ -223,6 +281,12 @@ pub enum ReceiveCaptureError {
     Invalid,
 }
 
+impl From<()> for ReceiveCaptureError {
+    fn from(_err: ()) -> ReceiveCaptureError {
+        ReceiveCaptureError::Invalid
+    }
+}
+
 #[derive(Debug)]
 pub enum ReceiveCaptureResultType {
     None,
@@ -326,7 +390,8 @@ impl ReceiveInstanceExt for Arc<ReceiveInstance> {
                             frame_rate_n: video_data.frame_rate_N,
 
                             timecode: video_data.timecode,
-
+                            four_cc_type: FourCCType::try_from(video_data.FourCC)?,
+                            frame_format_type: FrameFormatType::try_from(video_data.frame_format_type)?,
                             timestamp: video_data.timestamp,
                         };
                         Ok(ReceiveCaptureResult::Video(frame))
