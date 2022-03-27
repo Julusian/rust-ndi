@@ -9,8 +9,6 @@ fn choose_source_dir() -> Option<String> {
     // Follow the 'recommended' install path
     if let Ok(path) = env::var("NDI_RUNTIME_DIR_V5") {
         if Path::new(&path).exists() {
-            dbg!("penis");
-            dbg!(&path);
             return Some(path);
         }
     }
